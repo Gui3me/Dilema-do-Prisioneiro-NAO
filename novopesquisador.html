@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel do Pesquisador Â· Moedas &amp; Ruínas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/novopesquisador.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 20V10.5L7 8v2.5l3-2.5v2.5l2-1.7 2 1.7V8l3 2.5V20" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 20h16" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="12" cy="15" r="1.4" fill="#F3D98B"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">Moedas &amp; Ruínas</div>
+        <div class="brand-sub">Painel do Pesquisador</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <label class="field-label" for="api-ip-input">IP do robÃ´ NAO</label>
+      <div class="ip-field">
+        <span class="conn-dot pending" id="conn-status-dot"></span>
+        <input type="text" id="api-ip-input" placeholder="Ex: 10.43.151.105" inputmode="numeric" autocomplete="off" />
+      </div>
+      <div class="conn-caption" id="conn-status-caption">Verificando conexãoâ€¦</div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Seções do painel">
+      <ul class="dash-nav">
+        <li class="dash-nav-item active" data-tab="tab-personality" role="button" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+          Personalidade do NAO
+        </li>
+        <li class="dash-nav-item" data-tab="tab-results" role="button" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Resultados &amp; Dados
+        </li>
+        <li class="dash-nav-item" data-tab="tab-questionarios" role="button" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Questionários
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <!-- Session status â€” always visible while a match is active, regardless of tab -->
+    <div class="session-card" id="session-info-panel">
+      <div class="session-card-head">
+        <span id="session-status-dot"></span>
+        <span id="session-status-label">Sessão Ativa</span>
+      </div>
+      <div class="session-grid">
+        <div class="sg-item">
+          <div class="sg-label">ID Sessão</div>
+          <div class="sg-value" id="session-info-id">â€”</div>
+        </div>
+        <div class="sg-item">
+          <div class="sg-label">Rodada</div>
+          <div class="sg-value" id="session-info-rodada">â€”</div>
+        </div>
+        <div class="sg-item wide">
+          <div class="sg-label">Hash Participante</div>
+          <div class="sg-value mono" id="session-info-hash">â€”</div>
+        </div>
+        <div class="sg-item wide" id="session-winner-box" style="display:none;">
+          <div class="sg-label">Vencedor</div>
+          <div class="sg-value" id="session-info-winner">â€”</div>
+        </div>
+      </div>
+      <button id="btn-emergencia" type="button">ðŸ›‘ Interromper sessão</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="footer-caption">Tamanho da fonte</span>
+      <div id="font-control" role="group" aria-label="Tamanho da fonte">
+        <button class="fc-btn" id="font-decrease" title="Diminuir fonte" aria-label="Diminuir fonte">
+          <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+        <span id="font-scale-label" aria-live="polite">100%</span>
+        <button class="fc-btn" id="font-increase" title="Aumentar fonte" aria-label="Aumentar fonte">
+          <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-eyebrow">Estudo com robÃ´ NAO</div>
+        <h1 id="topbar-title">Personalidade do NAO</h1>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Tab 1: Personalidade -->
+      <section class="dash-tab active" id="tab-personality">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-eyebrow">Configuração da sessão</div>
+            <h2 class="panel-title">Personalidade do NAO</h2>
+            <p class="panel-desc">Selecione o perfil comportamental que o NAO adotará na próxima partida.</p>
+          </div>
+
+          <p id="game-active-warn" class="alert alert-danger" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Bloqueado: partida em andamento
+          </p>
+
+          <div id="personality-grid">
+            <button class="personality-btn" id="p-btn-0" data-p="0">
+              <div class="pbt-icon" style="background:var(--good-soft); color:var(--good-deep);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </div>
+              <span class="pbt-body">
+                <span class="pbt-label">Amigável</span>
+                <span class="pbt-desc">Cooperativo, empático</span>
+              </span>
+            </button>
+            <button class="personality-btn" id="p-btn-1" data-p="1">
+              <div class="pbt-icon" style="background:var(--bad-soft); color:var(--bad-deep);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="pbt-body">
+                <span class="pbt-label">Competitivo</span>
+                <span class="pbt-desc">Agressivo, provocador</span>
+              </span>
+            </button>
+            <button class="personality-btn" id="p-btn-2" data-p="2">
+              <div class="pbt-icon" style="background:var(--surface-soft); color:var(--ink-soft);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </div>
+              <span class="pbt-body">
+                <span class="pbt-label">Neutro</span>
+                <span class="pbt-desc">Racional, sem emoção</span>
+              </span>
+            </button>
+            <button class="personality-btn" id="p-btn-3" data-p="3">
+              <div class="pbt-icon" style="background:var(--gold-soft); color:var(--gold-deep);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/><path d="M22 10l-4 8"/></svg>
+              </div>
+              <span class="pbt-body">
+                <span class="pbt-label">Melancólico</span>
+                <span class="pbt-desc">Inseguro, coitado</span>
+              </span>
+            </button>
+          </div>
+
+          <p id="api-status"></p>
+        </div>
+      </section>
+
+      <!-- Tab 2: Resultados -->
+      <section class="dash-tab" id="tab-results">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-eyebrow">Banco de dados (SQLite)</div>
+            <h2 class="panel-title">Métricas globais</h2>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total de sessÃµes</div>
+              <div class="stat-value" id="stat-sessoes">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Vitórias participante</div>
+              <div class="stat-value good" id="stat-vit-jog">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Vitórias NAO</div>
+              <div class="stat-value bad" id="stat-vit-nao">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Empates</div>
+              <div class="stat-value" id="stat-empates">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title" style="font-size:1.1rem;">Proporção de decisÃµes (global)</h2>
+          </div>
+
+          <div class="decision-block">
+            <div class="decision-row">
+              <strong>DecisÃµes do participante</strong>
+              <span class="decision-pct" id="label-jog-pct">0% cooperou</span>
+            </div>
+            <div class="decision-bar"><div class="decision-fill" id="bar-jog-coop"></div></div>
+            <div class="decision-legend">
+              <span class="l-good">Cooperou (<span id="val-jog-coop">0</span>)</span>
+              <span class="l-bad">Traiu (<span id="val-jog-traiu">0</span>)</span>
+            </div>
+          </div>
+
+          <div class="decision-block">
+            <div class="decision-row">
+              <strong>DecisÃµes do NAO</strong>
+              <span class="decision-pct" id="label-nao-pct">0% cooperou</span>
+            </div>
+            <div class="decision-bar"><div class="decision-fill" id="bar-nao-coop"></div></div>
+            <div class="decision-legend">
+              <span class="l-good">Cooperou (<span id="val-nao-coop">0</span>)</span>
+              <span class="l-bad">Traiu (<span id="val-nao-traiu">0</span>)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title" style="font-size:1.1rem;">Histórico de sessÃµes</h2>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Hash participante</th>
+                  <th>Data/hora</th>
+                  <th>Personalidade</th>
+                  <th>Vencedor</th>
+                  <th style="text-align:right;">AçÃµes</th>
+                </tr>
+              </thead>
+              <tbody id="sessoes-tbody">
+                <tr class="empty-row"><td colspan="6">Nenhuma sessão registrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="sessao-details-container">
+            <div class="details-head">
+              <h4>Métricas da partida <span id="sessao-details-id"></span></h4>
+              <button id="close-sessao-details" type="button">Fechar</button>
+            </div>
+            <div class="details-summary">
+              <div class="ds-item">
+                <div class="stat-label">Moedas participante</div>
+                <div class="stat-value good" id="sd-moedas-jog">0</div>
+              </div>
+              <div class="ds-item">
+                <div class="stat-label">Moedas NAO</div>
+                <div class="stat-value bad" id="sd-moedas-nao">0</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rodada</th>
+                    <th>Participante</th>
+                    <th>NAO</th>
+                    <th>Resultado</th>
+                    <th>Moedas (P Ã— N)</th>
+                  </tr>
+                </thead>
+                <tbody id="sessao-rodadas-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Questionários -->
+      <section class="dash-tab" id="tab-questionarios">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-eyebrow">Dados de participação</div>
+            <h2 class="panel-title">Estatísticas de Questionários</h2>
+          </div>
+
+          <div class="stat-grid" style="grid-template-columns:repeat(2,1fr); margin-bottom:20px;">
+            <div class="stat-card">
+              <div class="stat-label">Responderam Pré &amp; Pós</div>
+              <div class="stat-value good" id="qs-total-completo">0</div>
+              <div style="font-size:.7rem;color:var(--ink-faint);margin-top:4px;" id="qs-ids-completo">â€”</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Só responderam Pré</div>
+              <div class="stat-value" id="qs-total-pre">0</div>
+              <div style="font-size:.7rem;color:var(--ink-faint);margin-top:4px;" id="qs-ids-pre">â€”</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Desistiram</div>
+              <div class="stat-value bad" id="qs-total-desistiu">0</div>
+              <div style="font-size:.7rem;color:var(--ink-faint);margin-top:4px;" id="qs-ids-desistiu">â€”</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Não participaram da pesquisa</div>
+              <div class="stat-value" id="qs-total-nao-part">0</div>
+              <div style="font-size:.7rem;color:var(--ink-faint);margin-top:4px;" id="qs-ids-nao-part">â€”</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title" style="font-size:1.1rem;">Histórico de Questionários</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Q.</th>
+                  <th>Data/hora</th>
+                  <th>Status</th>
+                  <th>Sessão Vinculada</th>
+                </tr>
+              </thead>
+              <tbody id="qs-lista-tbody">
+                <tr class="empty-row"><td colspan="4">Nenhum questionário registrado.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pós-questionário: perguntar ao pesquisador -->
+        <div class="panel" id="pos-prompt-panel" style="display:none;">
+          <div class="panel-head">
+            <div class="panel-eyebrow">Ação pós-jogo</div>
+            <h2 class="panel-title" style="font-size:1.1rem;">Aplicar Pós-Questionário?</h2>
+          </div>
+          <p style="font-size:.87rem;color:var(--ink-soft);margin-bottom:16px;">
+            Participante <strong id="pos-prompt-id">â€”</strong> concluiu o jogo. Deseja aplicar o pós-questionário?
+          </p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" id="btn-abrir-pos" style="font-size:.85rem;padding:10px 18px;">
+              Sim, abrir pós-questionário no tablet
+            </button>
+            <button class="btn btn-outline" id="btn-pular-pos" style="font-size:.85rem;padding:10px 18px;">
+              Não, pular
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ MODAL: Selecionar Participante ============ -->
+<div id="q-modal-overlay" style="
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+  z-index:1000; align-items:center; justify-content:center;
+">
+  <div style="
+    background:var(--surface); border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-md); padding:32px;
+    max-width:480px; width:90%; position:relative;
+    animation:tab-in .3s var(--ease);
+  ">
+    <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:8px;">Iniciar Sessão</div>
+    <h2 style="font-family:'Fraunces',serif;font-size:1.35rem;font-weight:600;margin:0 0 16px;">
+      Selecionar Participante
+    </h2>
+
+    <!-- Lista dinamica de questionarios aguardando (preenchida pelo JS) -->
+    <div id="q-modal-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="font-size:.85rem;color:var(--ink-soft);">Buscando questionários aguardando…</div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:0 0 14px;">
+
+    <!-- Botao Nao adere sempre visivel -->
+    <button class="btn btn-outline" id="q-modal-btn-sem-q" style="width:100%;justify-content:center;font-size:.88rem;padding:12px 18px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Participante não adere ao estudo — liberar sem questionário
+    </button>
+
+    <button id="q-modal-close" type="button" style="
+      position:absolute;top:14px;right:16px;
+      width:30px;height:30px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--surface-soft);border:1px solid var(--border);
+      color:var(--ink-faint);font-size:1rem;
+    ">&times;</button>
+  </div>
+</div>
+
+<style>
+  .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-faint);transition:background .3s;flex:0 0 auto;}
+  .conn-dot.pending{background:var(--gold);animation:conn-pulse 1.4s ease-in-out infinite;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:12px 22px;font-size:.88rem;font-weight:700;border-radius:var(--radius-md);transition:background .2s,transform .15s,box-shadow .2s;cursor:pointer;border:none;}
+  .btn:active{transform:scale(.97);}
+  .btn-outline{background:var(--surface);border:1.5px solid var(--border);color:var(--ink-soft);}
+  .btn-outline:hover{border-color:var(--border-strong);color:var(--ink);}
+  .btn-primary{background:var(--gold);color:#fff;box-shadow:0 2px 8px rgba(184,134,60,.3);}
+  .btn-primary:hover{background:var(--gold-deep);}
+  .btn-primary:disabled{opacity:.5;cursor:default;pointer-events:none;}
+</style>
+
+<script src='js/novopesquisador.js'></script>
+</body>
+</html>

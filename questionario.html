@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Questionário - Moedas & Ruínas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/questionario.css">
+</head>
+<body>
+<div class="page-wrap">
+  <header class="q-header">
+    <div class="q-brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20V10.5L7 8v2.5l3-2.5v2.5l2-1.7 2 1.7V8l3 2.5V20" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 20h16" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="15" r="1.4" fill="#F3D98B"/>
+      </svg>
+    </div>
+    <div class="q-header-text">
+      <div class="q-brand-name">Moedas &amp; Ruínas</div>
+      <div class="q-brand-sub">Pesquisa em Interação Humano-Robô</div>
+    </div>
+  </header>
+
+  <div class="q-progress" id="progress-wrap">
+    <div class="q-progress-meta">
+      <span class="q-progress-label" id="progress-label">Seção 1 de 5</span>
+      <span class="q-progress-frac" id="progress-frac">0%</span>
+    </div>
+    <div class="q-progress-bar">
+      <div class="q-progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 1: Termo -->
+  <section class="q-section active" id="sec-1">
+    <div class="section-eyebrow">Seção 1 de 5</div>
+    <h2 class="section-title">Termo de Consentimento</h2>
+    <div class="consent-text">
+      <p>Você está sendo convidado(a) a participar de um estudo sobre <strong>percepção e interação com robôs sociais</strong>. O objetivo principal desta pesquisa é coletar informações sobre o perfil dos participantes, seus conhecimentos e experiências prévias com tecnologias, jogos, ferramentas de Inteligência Artificial (IA) generativa e robôs sociais, bem como suas expectativas e percepções iniciais em relação ao robô NAO.</p>
+      <p><strong>Confidencialidade e Privacidade:</strong> A sua participação nas pesquisas ocorrerá mediante o uso das suas respostas a este questionário. Asseguramos a total confidencialidade e a privacidade dos seus dados, garantindo a não utilização das informações em prejuízo das pessoas, de acordo com as diretrizes de ética em pesquisa.</p>
+      <p><strong>Riscos e Benefícios:</strong> A pesquisa não apresenta riscos físicos ou psicológicos. Eventualmente, alguma pergunta poderá gerar desconforto ao participante, sendo possível deixar de respondê-la ou interromper sua participação a qualquer momento.</p>
+      <p>O tempo despendido neste experimento será de aproximadamente <strong>10 minutos</strong>. Você tem o direito de recusar-se a participar do estudo ou retirar seu consentimento a qualquer momento, sem precisar justificar.</p>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Sua decisão</label>
+      <div class="radio-cards">
+        <div class="radio-card"><input type="radio" name="consentimento" id="consent-yes" value="yes"><label for="consent-yes"><span class="radio-dot"></span>Li, compreendi os termos e <strong>ACEITO</strong> participar desta pesquisa de forma voluntária.</label></div>
+        <div class="radio-card"><input type="radio" name="consentimento" id="consent-no" value="no"><label for="consent-no"><span class="radio-dot"></span>Não compreendi os termos ou <strong>NÃO ACEITO</strong> participar desta pesquisa.</label></div>
+      </div>
+    </div>
+    <div class="q-validation" id="val-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Selecione uma das opções para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-primary" id="btn-1-next">Próximo</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: Dados -->
+  <section class="q-section" id="sec-2">
+    <div class="section-eyebrow">Seção 2 de 5</div>
+    <h2 class="section-title">Dados Demográficos</h2>
+    <div class="q-group">
+      <label class="q-group-label required">Qual é seu gênero?</label>
+      <div class="radio-cards">
+        <div class="radio-card"><input type="radio" name="genero" id="gen-m" value="Masculino"><label for="gen-m"><span class="radio-dot"></span>Masculino</label></div>
+        <div class="radio-card"><input type="radio" name="genero" id="gen-f" value="Feminino"><label for="gen-f"><span class="radio-dot"></span>Feminino</label></div>
+        <div class="radio-card"><input type="radio" name="genero" id="gen-nb" value="Não-binário"><label for="gen-nb"><span class="radio-dot"></span>Não-binário / Outro</label></div>
+        <div class="radio-card"><input type="radio" name="genero" id="gen-pnr" value="Prefiro não responder"><label for="gen-pnr"><span class="radio-dot"></span>Prefiro não responder</label></div>
+      </div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Qual é a sua faixa etária?</label>
+      <div class="radio-cards">
+        <div class="radio-card"><input type="radio" name="idade" id="idade-1" value="18-31"><label for="idade-1"><span class="radio-dot"></span>A partir de 18 até 31 anos</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-2" value="32-46"><label for="idade-2"><span class="radio-dot"></span>A partir de 32 até 46 anos</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-3" value="47-61"><label for="idade-3"><span class="radio-dot"></span>A partir de 47 até 61 anos</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-4" value="62-80"><label for="idade-4"><span class="radio-dot"></span>A partir de 62 até 80 anos</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-5" value="81+"><label for="idade-5"><span class="radio-dot"></span>81 anos ou mais</label></div>
+      </div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Qual é seu nível de escolaridade?</label>
+      <div class="radio-cards">
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-1" value="Ensino Fundamental Incompleto"><label for="esc-1"><span class="radio-dot"></span>Ensino Fundamental Incompleto</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-2" value="Ensino Fundamental Completo"><label for="esc-2"><span class="radio-dot"></span>Ensino Fundamental Completo</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-3" value="Ensino Médio Incompleto"><label for="esc-3"><span class="radio-dot"></span>Ensino Médio Incompleto</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-4" value="Ensino Médio Completo"><label for="esc-4"><span class="radio-dot"></span>Ensino Médio Completo</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-5" value="Ensino Superior Incompleto"><label for="esc-5"><span class="radio-dot"></span>Ensino Superior Incompleto</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-6" value="Ensino Superior Completo"><label for="esc-6"><span class="radio-dot"></span>Ensino Superior Completo</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-7" value="Pós-graduação Incompleta"><label for="esc-7"><span class="radio-dot"></span>Pós-graduação Incompleta</label></div>
+        <div class="radio-card"><input type="radio" name="escolaridade" id="esc-8" value="Pós-graduação Completa"><label for="esc-8"><span class="radio-dot"></span>Pós-graduação Completa</label></div>
+      </div>
+    </div>
+    <div class="q-validation" id="val-2">Preencha todas as perguntas obrigatórias para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-2-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-2-next">Próximo</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 3: Perfil -->
+  <section class="q-section" id="sec-3">
+    <div class="section-eyebrow">Seção 3 de 5</div>
+    <h2 class="section-title">Conhecimento e Perfil do Jogador</h2>
+    <div class="q-group">
+      <label class="q-group-label required">Frequência com que joga videogames (qualquer plataforma)</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Nunca</span><span>5 - Todos os dias</span></div><div class="scale-wrap" id="scale-jogos"></div></div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Nível de contato prévio com robôs</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Nenhum contato</span><span>5 - Contato frequente</span></div><div class="scale-wrap" id="scale-robos"></div></div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Conhecimento sobre o "Dilema do Prisioneiro"</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Desconheço</span><span>5 - Conheço muito bem</span></div><div class="scale-wrap" id="scale-dilema"></div></div>
+    </div>
+    
+    <div class="q-validation" id="val-3">Preencha todas as escalas para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-3-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-3-next">Próximo</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 4: GodSpeed -->
+  <section class="q-section" id="sec-4">
+    <div class="section-eyebrow">Seção 4 de 5</div>
+    <h2 class="section-title">Percepção Inicial do NAO</h2>
+    <p class="section-desc" style="margin-bottom:24px;">Observe o robô NAO que está na sala. Sem interagir, classifique sua percepção inicial sobre ele em relação às características abaixo.<br><br><strong>A = extremamente o termo da esquerda &nbsp;E = extremamente o termo da direita</strong></p>
+    
+    <table class="godspeed-table">
+      <thead>
+        <tr>
+          <th class="th-left" style="width:30%">Característica</th>
+          <th>A</th><th>2</th><th>3</th><th>4</th><th>E</th>
+          <th class="th-right" style="width:30%">Característica</th>
+        </tr>
+      </thead>
+      <tbody id="gs-tbody"></tbody>
+    </table>
+
+    <div class="q-validation" id="val-4">Avalie todos os itens na tabela para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-4-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-4-submit">Enviar Questionário</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 5: Tela Final e Código -->
+  <section class="q-section" id="sec-5">
+    <div class="done-screen active">
+      <div class="done-icon" style="background:var(--gold-soft); color:var(--gold-deep);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="done-title" style="margin-bottom:8px;">Questionário Enviado!</div>
+      
+      <div id="waiting-id-badge" style="
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        background:var(--gold-soft); border:2px solid rgba(184,134,60,.25);
+        border-radius:var(--radius-xl); padding:24px 32px; margin:24px auto;
+        max-width:320px;
+      ">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gold-deep);margin-bottom:4px;">Seu Código</div>
+        <div style="font-family:'Fraunces',serif;font-size:3rem;font-weight:700;color:var(--gold-deep);line-height:1;" id="waiting-id-display">Q—</div>
+      </div>
+      
+      <p style="color:var(--ink-soft); font-size:1.05rem; line-height:1.5; max-width:400px; margin:0 auto;">
+        Mostre este código para o pesquisador iniciar a sua partida no robô.
+      </p>
+
+      <div style="margin-top: 40px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
+        <button class="btn btn-outline" id="btn-novo-pre">Preencher novo pré-questionário</button>
+        <button class="btn btn-primary" id="btn-ir-pos">Acessar Pós-Questionário</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script src="js/questionario.js?v=2"></script>
+</body>
+</html>

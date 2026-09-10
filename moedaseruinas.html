@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Moedas &amp; Ruínas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/moedaseruinas.css">
+</head>
+<body>
+
+<!-- Castle Background Animation (v21 image frames) -->
+<div class="bg-anim-container">
+  <img id="bg-frame" src="Assets/Background/frame_001.jpg" alt="Castelo">
+</div>
+
+<!-- Ambient dust -->
+<div class="ambient" id="ambient"></div>
+
+<!-- Castle Collapse Overlay (SVG fallback) -->
+<div id="castle-collapse-overlay" aria-hidden="true">
+  <svg id="castle-collapse-svg" width="100%" height="100%" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="colGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#8E8B84" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#5A5752" stop-opacity="0.75"/>
+      </linearGradient>
+    </defs>
+    <g class="castle-piece" id="cp-keep"  style="--tilt:-6deg">
+      <rect x="580" y="104" width="280" height="496" rx="4" fill="url(#colGrad)"/>
+      <rect x="580" y="76"  width="44"  height="30"  rx="3" fill="url(#colGrad)"/>
+      <rect x="636" y="76"  width="44"  height="30"  rx="3" fill="url(#colGrad)"/>
+      <rect x="692" y="76"  width="44"  height="30"  rx="3" fill="url(#colGrad)"/>
+      <rect x="748" y="76"  width="44"  height="30"  rx="3" fill="url(#colGrad)"/>
+      <rect x="804" y="76"  width="44"  height="30"  rx="3" fill="url(#colGrad)"/>
+    </g>
+    <g class="castle-piece" id="cp-left"  style="--tilt:-18deg">
+      <rect x="380" y="246" width="150" height="354" rx="4" fill="url(#colGrad)"/>
+      <rect x="380" y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+      <rect x="428" y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+      <rect x="476" y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+    </g>
+    <g class="castle-piece" id="cp-right" style="--tilt:18deg">
+      <rect x="910"  y="246" width="150" height="354" rx="4" fill="url(#colGrad)"/>
+      <rect x="910"  y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+      <rect x="958"  y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+      <rect x="1006" y="220" width="38"  height="28"  rx="3" fill="url(#colGrad)"/>
+    </g>
+    <g class="castle-piece" id="cp-wl" style="--tilt:-10deg">
+      <rect x="530" y="360" width="90" height="240" fill="url(#colGrad)"/>
+    </g>
+    <g class="castle-piece" id="cp-wr" style="--tilt:10deg">
+      <rect x="820" y="360" width="90" height="240" fill="url(#colGrad)"/>
+    </g>
+    <ellipse class="castle-dust" id="dust1" cx="500" cy="590" rx="90"  ry="30" fill="rgba(160,155,145,0.55)"/>
+    <ellipse class="castle-dust" id="dust2" cx="720" cy="595" rx="120" ry="28" fill="rgba(160,155,145,0.65)"/>
+    <ellipse class="castle-dust" id="dust3" cx="940" cy="590" rx="90"  ry="30" fill="rgba(160,155,145,0.55)"/>
+    <ellipse class="castle-dust" id="dust4" cx="720" cy="580" rx="200" ry="22" fill="rgba(190,180,170,0.4)"/>
+  </svg>
+</div>
+
+<!-- Researcher Overlay -->
+<div id="researcher-overlay" aria-live="assertive" aria-label="Chamando pesquisador" role="dialog">
+  <div class="researcher-icon-ring">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M6 21v-1a6 6 0 0 1 12 0v1"/>
+      <rect x="15" y="3" width="5" height="7" rx="1"/>
+      <line x1="17" y1="6" x2="19" y2="6"/>
+      <line x1="17" y1="8" x2="19" y2="8"/>
+    </svg>
+  </div>
+  <div class="researcher-label">Chamando pesquisador</div>
+  <div class="researcher-sub">Aguarde um momento<span class="researcher-dots"><span>.</span><span>.</span><span>.</span></span></div>
+  <div class="researcher-progress-bar">
+    <div class="researcher-progress-fill" id="researcher-progress-fill"></div>
+  </div>
+  <div class="researcher-dismiss-hint">Clique em qualquer lugar para continuar</div>
+</div>
+
+<!-- Top Bar UI -->
+<div class="top-ui">
+  <div class="spacer" style="width: 120px;"></div>
+
+  <div class="status-container">
+    <div class="status-text">
+      <span class="dot"></span> O CASTELO ESTÁ DESMORONANDO
+    </div>
+    <div class="treasure-bar">
+      <div class="treasure-fill" id="treasure-fill"></div>
+    </div>
+  </div>
+
+  <div class="controls-container">
+    <div class="control-btn-group">
+      <button class="control-btn" id="font-decrease" aria-label="Diminuir fonte">A-</button>
+      <span id="font-scale-label">Aa</span>
+      <button class="control-btn" id="font-increase" aria-label="Aumentar fonte">A+</button>
+    </div>
+    <button class="theme-btn-wrapper" id="subtitles-toggle" aria-label="Ativar Legendas (Libras)" title="Ativar/Desativar Legendas">
+        <svg id="subtitles-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Hand 1 -->
+          <path d="M9 13V6a2 2 0 0 0-4 0v7"></path>
+          <path d="M5 12V5a2 2 0 0 0-4 0v7"></path>
+          <path d="M1 12v4a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-6a2 2 0 0 0-4 0"></path>
+          <!-- Hand 2 (mirrored roughly and shifted) -->
+          <path d="M15 13V6a2 2 0 0 1 4 0v7"></path>
+          <path d="M19 12V5a2 2 0 0 1 4 0v7"></path>
+          <path d="M23 12v4a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5v-6a2 2 0 0 1 4 0"></path>
+        </svg>
+      </button>
+      <button class="theme-btn-wrapper" id="theme-toggle" aria-label="Alternar modo noturno">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      </button>
+    </div>
+  </div>
+
+<main id="app">
+
+  <!-- Tela 1: Splash -->
+  <section class="screen active" id="screen-splash">
+    <div class="card">
+      <div class="eyebrow">Um jogo social com o robô NAO</div>
+      <h1 class="title-xl">Moedas &amp; Ruínas</h1>
+      <p class="body-text" style="text-align:center;">Confiança, ganância e um castelo prestes a desabar.</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="btn-jogar">Jogar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tela 2: História -->
+  <section class="screen" id="screen-story">
+    <div class="card" style="text-align:left;">
+      <h2 class="title-lg" style="text-align:center;">O Tesouro do Castelo</h2>
+      <p class="body-text">Vocês encontraram um tesouro escondido no topo de um castelo antigo. Mas as paredes tremem, o castelo está desmoronando, e a cada instante uma parte dele despenca lá de cima, levando junto parte do tesouro para sempre. Para sair com o que puderem, precisam tomar decisões rápidas a cada passo do caminho.</p>
+      <p class="body-text">A cada oportunidade, vocês dois podem: cooperar, dividindo igualmente as moedas encontradas, ou trair, tentando ficar com mais para si, arriscando a confiança um do outro. Não há tempo para pensar demais. Nem sempre dá para saber o que o outro vai escolher. A decisão é sua, e precisa ser rápida.</p>
+      <div class="cta-row" style="text-align:center;">
+        <button class="btn btn-primary" id="btn-continuar">Continuar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tela 3: Regras -->
+  <section class="screen" id="screen-rules">
+    <div class="card">
+      <h2 class="title-lg">Como Jogar</h2>
+      <ul class="rules-list">
+        <li>Escolha cooperar para dividir o tesouro.</li>
+        <li>Escolha trair para tentar roubar o tesouro todo para si.</li>
+        <li>Se você e o NAO cooperarem, ambos ganham duas moedas.</li>
+        <li>Se você e o NAO traírem, ninguém ganha moeda.</li>
+        <li>Se um trapacear e o outro cooperar, o trapaceiro ganha três moedas e o traído perde uma.</li>
+        <li>Quem sair do castelo com mais moedas, vence.</li>
+      </ul>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="btn-comecar">Começar a Jogada</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tela 4: Jogo (v21 layout) -->
+  <section class="screen" id="screen-game">
+    <div class="game-layout">
+
+      <!-- Painel de Regras (esquerda absoluta) -->
+      <aside class="rules-panel" id="rules-panel">
+        <div class="rules-header">
+          <img src="Assets/IconRules.png" alt="Regras"> REGRAS
+        </div>
+        <ul class="rules-panel-list">
+          <li><span class="rule-number">1</span><span class="text">Cooperar → divide o tesouro igualmente.</span></li>
+          <li><span class="rule-number">2</span><span class="text">Trair → tenta ficar com tudo.</span></li>
+          <li><span class="rule-number">3</span><span class="text">Ambos cooperam → cada um ganha <b>+2</b> moedas.</span></li>
+          <li><span class="rule-number">4</span><span class="text">Ambos traem → ninguém ganha moedas.</span></li>
+          <li><span class="rule-number">5</span><span class="text">Um trai, outro coopera → traidor <b>+3</b>, cooperador <b>-1</b>.</span></li>
+          <li><span class="rule-number">6</span><span class="text">Mais moedas ao final = vitória.</span></li>
+        </ul>
+      </aside>
+
+      <!-- Painel Principal (PNG background) -->
+      <div class="main-game-panel">
+
+        <div class="players-arena">
+          <!-- NAO -->
+          <div class="player-side">
+            <div class="shield-avatar">
+              <img src="Assets/IconRoboNao.png" alt="NAO">
+            </div>
+            <div class="player-name">NAO</div>
+            <div class="coin-display" id="nao-coin-count">
+              <img src="Assets/IconCoin.png" alt="Moeda"> <span id="nao-coins">0</span>
+            </div>
+          </div>
+
+          <div class="vs-badge">×</div>
+
+          <!-- Você -->
+          <div class="player-side">
+            <div class="shield-avatar">
+              <img src="Assets/IconUser.png" alt="Você">
+            </div>
+            <div class="player-name">VOCÊ</div>
+            <div class="coin-display" id="you-coin-count">
+              <img src="Assets/IconCoin.png" alt="Moeda"> <span id="you-coins">0</span>
+            </div>
+          </div>
+
+          <div class="divider-diamond"></div>
+        </div>
+
+        <div class="prompt-title" id="prompt-text">FAÇA SUA ESCOLHA</div>
+
+        <div class="action-buttons">
+          <button class="action-btn btn-coop" id="btn-cooperate">
+            <img src="Assets/IconGoodButon.png" alt="Coop"> COOPERAR
+          </button>
+          <button class="action-btn btn-trap" id="btn-betray">
+            <img src="Assets/IconBadButton.png" alt="Trap"> TRAPACEAR
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Tela 5: Fim -->
+  <section class="screen" id="screen-end">
+    <div class="card" id="end-card"></div>
+  </section>
+
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon" id="modal-icon"></div>
+    <h2 id="modal-title"></h2>
+    <p id="modal-desc"></p>
+    <div class="modal-coins" id="modal-coins"></div>
+    
+    <button class="btn btn-primary" id="modal-ok">OK</button>
+  </div>
+  <p id="modal-subtitle" class="modal-subtitle" style="display:none; position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; background: rgba(0,0,0,0.75); color: #fff; font-size: 1.4rem; padding: 15px 25px; border-radius: 12px; text-align: center; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 100; letter-spacing: 0.02em; border: 1px solid rgba(255,255,255,0.1);"></p>
+</div>
+
+<div id="theme-transition-overlay">
+  <div id="theme-anim-container">
+    <div id="anim-sun">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    </div>
+    <div id="anim-moon">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </div>
+  </div>
+</div>
+
+<script src='js/moedaseruinas.js'></script>
+</body>
+</html>

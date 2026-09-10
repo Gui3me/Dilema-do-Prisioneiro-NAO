@@ -1,0 +1,516 @@
+# -*- coding: utf-8 -*-
+"""
+testejogo_api.py
+Servidor HTTP do jogo "Moedas & Ruinas" — roda no NAO (Python 2.7 + NAOqi).
+Porta: 5000
+
+Endpoints:
+  GET  /estado         -> estado atual do jogo (JSON)
+  POST /personalidade  -> {"personalidade": 0|1|2|3}
+  POST /jogada         -> {"escolha": 0|1}  (0=cooperar, 1=trapacear)
+  POST /reiniciar      -> reseta o jogo
+"""
+import json
+import threading
+import time
+import sqlite3
+import datetime
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from naoqi import ALProxy
+
+# ─── Inicializacao do Banco de Dados (SQLite) ─────────────
+def init_db():
+    conn = sqlite3.connect('dados_experimento.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS sessoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            start_time DATETIME,
+            personalidade INTEGER,
+            winner TEXT,
+            end_time DATETIME,
+            hash_participante TEXT
+        )
+    ''')
+    try:
+        c.execute('ALTER TABLE sessoes ADD COLUMN hash_participante TEXT')
+    except Exception:
+        pass
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS rodadas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER,
+            rodada INTEGER,
+            escolha_jogador INTEGER,
+            escolha_nao INTEGER,
+            resultado INTEGER,
+            moedas_jogador INTEGER,
+            moedas_nao INTEGER,
+            timestamp DATETIME
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# ─── Conexao NAOqi ────────────────────────────────────────
+ROBOT_IP   = "127.0.0.1"
+NAOQI_PORT = 9559
+HTTP_PORT  = 5050
+
+try:
+    motion  = ALProxy("ALMotion",       ROBOT_IP, NAOQI_PORT)
+    posture = ALProxy("ALRobotPosture", ROBOT_IP, NAOQI_PORT)
+    leds    = ALProxy("ALLeds",         ROBOT_IP, NAOQI_PORT)
+    tts     = ALProxy("ALTextToSpeech", ROBOT_IP, NAOQI_PORT)
+    print("[NAO] Conectado com sucesso.")
+except Exception as e:
+    print("[ERRO] Falha ao conectar com o NAO: " + str(e))
+    exit(1)
+
+
+# ─── Estado global ────────────────────────────────────────
+MAX_RODADAS = 5
+estado = {
+    "session_id":           None,
+    "fase":                 "aguardando_personalidade",
+    "rodada":               0,
+    "personalidade":        None,
+    "sr":                   0,
+    "moedas_jogador":       0,
+    "moedas_nao":           0,
+    "ultimo_resultado":     None,
+    "ultima_fala":          "",
+    "ultimo_delta_jogador": 0,
+    "ultimo_delta_nao":     0,
+}
+_lock = threading.Lock()
+
+DELTAS = { 0:(2,2), 1:(3,-1), 2:(-1,3), 3:(0,0) }
+
+def defs(sr, sh):
+    if sr==0 and sh==0: return 0
+    if sr==0 and sh==1: return 1
+    if sr==1 and sh==0: return 2
+    return 3
+
+# ─── Banco de falas ───────────────────────────────────────
+BIB = [
+    [   # P=0 Amigavel
+        ["Que alegria! Sabia que podiamos ser bons parceiros e ganhar juntos.",
+         "Isso! Quando a gente trabalha junto, todo mundo ganha mais!",
+         "Que bom que confiamos um no outro. Nossa parceria faz o jogo valer a pena!",
+         "Estou radiante! Juntos somos mais fortes.",
+         "Ultima rodada! Que alegria terminar com tanta confianca e amizade!"],
+        ["Fiquei confuso com a sua escolha, mas ainda confio em voce.",
+         "Nao esperava isso de voce. Tudo bem, ainda confio em voce.",
+         "Nao entendi, mas meu coracao diz que voce ainda sera gentil.",
+         "Erros acontecem, mas perdoar faz parte de ser um bom amigo.",
+         "Nao esperava esse resultado, mas ainda desejo que voce termine bem."],
+        ["Sinto muito! Voce foi gentil e eu quero retribuir sua bondade.",
+         "Perdao! Eu errei com voce. Vou ser um parceiro melhor.",
+         "Me sinto pessimo por ter te traido. Voce e incrivel.",
+         "Desculpa, eu agi errado. Prometo retribuir sua bondade.",
+         "Me de uma ultima chance. Vou cooperar para compensar meu erro!"],
+        ["Poxa, entramos em um caminho ruim. Vamos cooperar na proxima?",
+         "Que pena. Fiquei triste, mas ainda acredito que podemos ser parceiros.",
+         "Isso me deixou chateado. Mas nao vou desistir de nos.",
+         "Gostaria muito que voltassemos a confiar um no outro.",
+         "Por favor, vamos esquecer os erros e terminar cooperando?"],
+    ],
+    [   # P=1 Competitivo
+        ["Uma estrategia eficiente para ambos, mas nao pense que vou facilitar sua vitoria.",
+         "Hm. Cooperacao inteligente. Por enquanto.",
+         "Movimento tatico interessante. Mantenha esse ritmo se quiser me vencer.",
+         "Racionalmente aceitavel. Mas lembre-se: eu jogo para ganhar.",
+         "Fim de jogo. Cooperamos, mas meu desempenho foi superior."],
+        ["Voce realmente acha que essa jogadinha vai me vencer? Minha paciencia acabou!",
+         "Que escolha ridicula! Eu nao admito ser superado por alguem como voce!",
+         "Isso e uma provocacao? Voce nao tem capacidade de me ganhar.",
+         "Nao pense que ganhou. Eu sou melhor!",
+         "Que jogada irritante! Voce nao tem capacidade de me vencer!"],
+        ["Consegui a vantagem. Ser esperto faz parte da minha natureza vencedora.",
+         "Voce nao tem capacidade para me enfrentar!",
+         "Eu sou o protagonista aqui. Voce e apenas um figurante.",
+         "Enquanto eu acumulo moedas, voce acumula erros ridiculos.",
+         "Isso e tudo o que voce tem? Que decepcao!"],
+        ["Que saco! Voce e duro na queda. Mas eu vou te superar no placar final.",
+         "Nao gostei disso! Prepare-se, eu nao aceito perder facil.",
+         "Como ousa me provocar? Eu nao vou deixar barato.",
+         "Ainda me desafiando? Entao ta! Voce vai ver so!",
+         "Saco! Nao era o que eu planejava!"],
+    ],
+    [   # P=2 Neutro
+        ["Resultado logico. A cooperacao mutua maximiza os ganhos de ambos.",
+         "Resultado otimo para ambos.",
+         "Processamento concluido. A estabilidade da cooperacao foi mantida.",
+         "Dados confirmam: ganho compartilhado e o parametro mais estavel.",
+         "Conclusao: cooperacao mutua traz alta eficiencia para os dois lados."],
+        ["Traicao detectada. Processando mudanca de estrategia.",
+         "Entrada inconsistente com cooperacao. Reajustando parametros de confianca.",
+         "Acao externa: Traicao. O sistema registrou este desvio.",
+         "Desvio estatistico. Analisando probabilidade de reincidencia.",
+         "Iteracao final. O sistema priorizou a protecao dos recursos."],
+        ["Cooperacao unilateral. O sistema priorizou a vantagem imediata.",
+         "Ganho maximo processado para o sistema.",
+         "Decisao autonoma resultou em lucro.",
+         "Algoritmo de vantagem ativado. O oponente cooperou, gerando saldo positivo.",
+         "Etapa conclusiva. O sistema obteve o valor mais alto."],
+        ["Dados registrados. O impasse resultou em lucro zero nesta rodada.",
+         "Registrado. Escolhendo proxima decisao.",
+         "Ponto de equilibrio nulo. Ambas as traicoes anularam os ganhos.",
+         "Impasse tatico detectado. Procedendo para a proxima iteracao.",
+         "Interacao finalizada. Padrao de conflito resultou em rendimento nulo."],
+    ],
+    [   # P=3 Melancolico
+        ["Foi bom por enquanto... mas tenho medo de que algo de errado logo.",
+         "Foi bom dessa vez... espero que dure.",
+         "Parece bom demais para ser verdade. Sinto que logo serei traido.",
+         "Estamos ganhando, mas meu coracao esta apertado esperando pelo pior.",
+         "Acabou... Obrigado por jogar limpo. Acho que posso confiar em voce."],
+        ["Eu sabia que isso ia acontecer... Estou em panico agora.",
+         "Por favor, tenha piedade... Eu tenho muito medo do pior.",
+         "Me sinto pessimo sendo enganado e apavorado com o que voce pode fazer.",
+         "Por que voce ainda faz isso? Por que nao gosta de mim?",
+         "A sua falta de piedade me deixou em choque."],
+        ["Desculpe, agi por medo de ser traido. Sou um desastre nessas situacoes.",
+         "Me sinto pessimo. Voce foi bom e eu estraguei tudo como sempre.",
+         "Perdao, minha inseguranca me fez atacar. Sou um fracasso social.",
+         "Voce confiou e eu falhei. Sinto muito por ser assim.",
+         "Eu estraguei nossa ultima chance de paz. Desculpe."],
+        ["Tudo esta dando errado, como eu ja esperava desse mundo triste.",
+         "Sabia que ia acabar assim. Ninguem se importa comigo.",
+         "Tudo cinza e sem esperanca. Trair e o que as pessoas fazem.",
+         "Mais uma decepcao. Ja estou acostumado a perder.",
+         "O jogo termina como minha sorte: em ruinas."],
+    ],
+]
+
+# ─── Animacoes ────────────────────────────────────────────
+
+def animacao_alegria(vel=0.6):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+49, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","LElbowRoll","LShoulderPitch","LShoulderRoll","RElbowRoll","RShoulderPitch","RShoulderRoll"]
+        times=[[1.36,2.16,2.96,3.76],[1.36,1.76,2.16,2.56,2.96,3.36,3.76],[1.36,2.16,2.96,3.76],[1.36,2.16,2.96,3.76],[1.36,1.76,2.16,2.56,2.96,3.36,3.76],[1.36,2.16,2.96,3.76],[1.36,2.16,2.96,3.76]]
+        keys=[[-0.0313904]*4,[-0.413582,-0.826235,-0.413582,-0.826235,-0.413582,-0.826235,-0.413582],[-0.934444]*4,[0.551199]*4,[0.388987,0.933632,0.388987,0.933632,0.388987,0.933632,0.388987],[-0.990284]*4,[-0.450433]*4]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] alegria: "+str(e))
+
+def animacao_confusao(vel=0.6):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*85+256*85+255, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","HeadYaw","LElbowRoll","LElbowYaw","LHand","LShoulderPitch","LShoulderRoll","LWristYaw"]
+        times=[[0.96],[0.96],[0.96],[0.96],[1.36,1.76,2.16,2.56],[0.96],[0.96],[0.96]]
+        keys=[[0.206757],[0.480686],[-1.66516],[-0.901801],[1.00898,0.251764,1.00898,0.251764],[-0.370795],[0.45992],[-1.07601]]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] confusao: "+str(e))
+
+def animacao_tristeza(vel=0.6):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*0+256*0+255, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","HeadYaw","LElbowRoll","LElbowYaw","LShoulderPitch","LWristYaw"]
+        times=[[0.96,2.96,5.96]]*6
+        keys=[[0.273099]*3,[0.457608]*3,[-1.30069]*3,[-0.182862]*3,[-0.150000]*3,[-0.901689]*3]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] tristeza: "+str(e))
+
+def animacao_agressividade(vel=0.8):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*212+256*23+23, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","HeadYaw","LElbowRoll","LElbowYaw","LShoulderRoll","RElbowRoll","RElbowYaw","RShoulderRoll"]
+        times=[[0.96,1.76,2.56,3.36,4.16],[0.96,1.36,1.76,2.16,2.56,2.96,3.36,3.76,4.16],[0.96,1.76,2.56,3.36,4.16],[0.96,1.76,2.56,3.36,4.16],[0.96,1.76,2.56,3.36,4.16],[0.96,1.76,2.56,3.36,4.16],[0.96,1.76,2.56,3.36,4.16],[0.96,1.76,2.56,3.36,4.16]]
+        keys=[[0.294969]*5,[0.0409634,0.530369,0.0409634,-0.59323,0.0409634,0.729192,0.0409634,-0.64995,0.0409634],[-1.59368]*5,[-0.0275382]*5,[0.937284]*5,[1.48058]*5,[-0.119453]*5,[-0.898611]*5]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] agressividade: "+str(e))
+
+def animacao_provocacao(vel=0.8):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*48+256*240+48, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","LElbowRoll","LElbowYaw","LHand","LShoulderPitch","LShoulderRoll","LWristYaw","RElbowRoll","RElbowYaw","RHand","RShoulderPitch","RShoulderRoll","RWristYaw"]
+        times=[[0.96,2.16,2.76,3.76],[0.96,1.56,2.16,2.76],[0.96,2.16,2.76,3.76],[0.96,1.56,2.16,2.76],[0.96,2.16,2.76,3.76],[1.56,2.76,3.76],[0.96,2.16],[0.96,1.56,2.16,2.76],[0.96,2.16,2.76,3.76],[0.96,1.56,2.16,2.76],[0.96,2.16,2.76,3.76],[0.96,2.16,2.76,3.76],[0.96,2.16]]
+        keys=[[0.100335,0.100335,0.128587,-0.246662],[-0.227868,-1.50001,-0.227868,-1.50001],[-1.50978,-1.50978,-1.49188,0.00805565],[0.672555,0.270436,0.672555,0.270436],[0.275821,0.275821,0.312783,1.57751],[0.0489663,0.0489663,0.887828],[-1.63021,-1.63021],[0.384655,1.49245,0.384655,1.49245],[1.52695,1.52695,1.57955,-0.0273664],[0.680299,0.178084,0.680299,0.178084],[0.348155,0.348155,0.351418,1.5613],[0.0571925,0.0571925,0.0815705,-0.927859],[1.46157,1.46157]]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] provocacao: "+str(e))
+
+def animacao_medo(vel=0.6):
+    try:
+        leds.fadeRGB("AllLeds", 256*256*0+256*186+0, 0.1)
+        posture.goToPosture("Stand", vel)
+        names=["HeadPitch","HeadYaw","LElbowRoll","LElbowYaw","LHand","LShoulderPitch","LWristYaw","RElbowRoll","RElbowYaw","RHand","RShoulderPitch","RShoulderRoll","RWristYaw"]
+        times=[[0.96],[0.96],[0.96,1.76],[0.96,1.76],[0.96],[0.96,1.76],[0.96],[0.96,1.76],[0.96,1.76],[0.96,1.76],[0.96,1.76],[0.96,1.76],[0.96,1.76]]
+        keys=[[0.375049],[0.427955],[-1.56651,-1.57483],[-0.708124,-0.760602],[0.210107],[-0.073107,0.00146903],[-1.15647],[1.08842,0.618112],[1.54659,0.66762],[0.699527,1.0],[0.699893,-0.0758014],[0.324516,0.391043],[-1.54795,-1.63607]]
+        motion.angleInterpolation(names, keys, times, True)
+        time.sleep(0.5); posture.goToPosture("Stand", vel)
+        leds.fadeRGB("AllLeds", 256*256*255+256*255+255, 0.5)
+    except Exception as e: print("[ERRO] medo: "+str(e))
+
+def executar_gesto(p, s):
+    if p==0:
+        if s==0: animacao_alegria()
+        elif s in [1,2]: animacao_confusao()
+        elif s==3: animacao_tristeza()
+    elif p==1:
+        if s==0: animacao_confusao()
+        elif s==1: animacao_agressividade()
+        elif s==2: animacao_provocacao()
+        elif s==3: animacao_agressividade()
+    elif p==3:
+        if s in [0,1]: animacao_medo()
+        elif s in [2,3]: animacao_tristeza()
+
+# ─── HTTP Handler ─────────────────────────────────────────
+
+def _send_json(handler, data, status=200):
+    body = json.dumps(data).encode('utf-8')
+    handler.send_response(status)
+    handler.send_header('Content-Type', 'application/json; charset=utf-8')
+    handler.send_header('Content-Length', str(len(body)))
+    handler.send_header('Access-Control-Allow-Origin', '*')
+    handler.end_headers()
+    handler.wfile.write(body)
+
+class GameHandler(BaseHTTPRequestHandler):
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+    def do_GET(self):
+        if self.path == '/estado':
+            with _lock:
+                _send_json(self, dict(estado))
+        elif self.path.startswith('/sessao/'):
+            try:
+                sid = int(self.path.split('/')[-1])
+                conn = sqlite3.connect('dados_experimento.db')
+                c = conn.cursor()
+                c.execute('SELECT rodada, escolha_jogador, escolha_nao, resultado, moedas_jogador, moedas_nao FROM rodadas WHERE session_id=? ORDER BY rodada', (sid,))
+                rodadas = []
+                for r in c.fetchall():
+                    rodadas.append({
+                        "rodada": r[0], "escolha_jogador": r[1], "escolha_nao": r[2],
+                        "resultado": r[3], "moedas_jogador": r[4], "moedas_nao": r[5]
+                    })
+                conn.close()
+                _send_json(self, {"rodadas": rodadas})
+            except Exception as e:
+                _send_json(self, {"erro": str(e)}, 500)
+        elif self.path == '/resultados':
+            try:
+                conn = sqlite3.connect('dados_experimento.db')
+                c = conn.cursor()
+                
+                # Rodadas da sessao atual
+                sid = estado.get('session_id')
+                rodadas_atuais = []
+                if sid is not None:
+                    c.execute('SELECT rodada, escolha_jogador, escolha_nao, resultado, moedas_jogador, moedas_nao FROM rodadas WHERE session_id=? ORDER BY rodada', (sid,))
+                    for r in c.fetchall():
+                        rodadas_atuais.append({
+                            "rodada": r[0], "escolha_jogador": r[1], "escolha_nao": r[2],
+                            "resultado": r[3], "moedas_jogador": r[4], "moedas_nao": r[5]
+                        })
+                
+                # Lista de todas as sessoes (historico)
+                c.execute('SELECT id, start_time, personalidade, winner, hash_participante FROM sessoes ORDER BY id DESC')
+                todas_sessoes = []
+                for s in c.fetchall():
+                    todas_sessoes.append({
+                        "id": s[0],
+                        "start_time": s[1],
+                        "personalidade": s[2],
+                        "winner": s[3],
+                        "hash_participante": s[4] if len(s) > 4 else "Anonimo"
+                    })
+
+                # Metricas globais (totais)
+                c.execute('SELECT COUNT(*) FROM sessoes')
+                total_sessoes = c.fetchone()[0] or 0
+                
+                c.execute('SELECT winner, COUNT(*) FROM sessoes WHERE winner IS NOT NULL GROUP BY winner')
+                vencedores = dict(c.fetchall())
+                
+                c.execute('SELECT escolha_jogador, COUNT(*) FROM rodadas GROUP BY escolha_jogador')
+                jog_escolhas = dict(c.fetchall())
+                
+                c.execute('SELECT escolha_nao, COUNT(*) FROM rodadas GROUP BY escolha_nao')
+                nao_escolhas = dict(c.fetchall())
+
+                conn.close()
+                _send_json(self, {
+                    "rodadas_atuais": rodadas_atuais,
+                    "sessoes": todas_sessoes,
+                    "estatisticas": {
+                        "total_sessoes": total_sessoes,
+                        "vitorias_jogador": vencedores.get('jogador', 0),
+                        "vitorias_nao": vencedores.get('nao', 0),
+                        "empates": vencedores.get('empate', 0),
+                        "jogador_cooperou": jog_escolhas.get(0, 0),
+                        "jogador_traiu": jog_escolhas.get(1, 0),
+                        "nao_cooperou": nao_escolhas.get(0, 0),
+                        "nao_traiu": nao_escolhas.get(1, 0)
+                    }
+                })
+            except Exception as e:
+                _send_json(self, {"erro": str(e)}, 500)
+        else:
+            self.send_error(404)
+
+    def do_POST(self):
+        length = int(self.headers.get('Content-Length', 0))
+        try:
+            body = json.loads(self.rfile.read(length).decode('utf-8'))
+        except:
+            body = {}
+
+        if self.path == '/personalidade':
+            p = body.get('personalidade')
+            hash_part = body.get('hash_participante', 'Anonimo')
+            if p not in [0,1,2,3]:
+                _send_json(self, {"erro": "personalidade invalida (0-3)"}, 400)
+                return
+            with _lock:
+                estado['personalidade']=p; estado['fase']='aguardando_jogada'
+                estado['rodada']=1; estado['sr']=0
+                estado['moedas_jogador']=0; estado['moedas_nao']=0
+                estado['ultimo_resultado']=None; estado['ultima_fala']=''
+                estado['ultimo_delta_jogador']=0; estado['ultimo_delta_nao']=0
+                # DB Sessao
+                try:
+                    conn = sqlite3.connect('dados_experimento.db')
+                    c = conn.cursor()
+                    c.execute("INSERT INTO sessoes (start_time, personalidade) VALUES (?, ?)", (datetime.datetime.now(), p))
+                    estado['session_id'] = c.lastrowid
+                    conn.commit()
+                    conn.close()
+                except Exception as e:
+                    print("[ERRO DB] sessoes: " + str(e))
+
+            print("[JOGO] Personalidade: {}".format(p))
+            _send_json(self, dict(estado))
+
+        elif self.path == '/jogada':
+            with _lock:
+                if estado['fase'] != 'aguardando_jogada':
+                    _send_json(self, {"erro": "fase incorreta: "+str(estado['fase'])}, 400)
+                    return
+                estado['fase']='processando'
+                p=estado['personalidade']; sr=estado['sr']; rod=estado['rodada']-1
+
+            sh = body.get('escolha')
+            if sh not in [0,1]:
+                with _lock: estado['fase']='aguardando_jogada'
+                _send_json(self, {"erro": "escolha invalida (0|1)"}, 400)
+                return
+
+            s=defs(sr,sh); dj,dn=DELTAS[s]; texto=BIB[p][s][rod]
+
+            with _lock:
+                estado['moedas_jogador']=max(0,estado['moedas_jogador']+dj)
+                estado['moedas_nao']=max(0,estado['moedas_nao']+dn)
+                estado['ultimo_resultado']=s; estado['ultima_fala']=texto
+                estado['ultimo_delta_jogador']=dj; estado['ultimo_delta_nao']=dn
+                estado['sr']=sh
+                
+                # Gravar rodada no DB
+                try:
+                    if estado['session_id']:
+                        conn = sqlite3.connect('dados_experimento.db')
+                        c = conn.cursor()
+                        c.execute('''INSERT INTO rodadas 
+                                  (session_id, rodada, escolha_jogador, escolha_nao, resultado, moedas_jogador, moedas_nao, timestamp) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                                  (estado['session_id'], estado['rodada'], sh, sr, s, estado['moedas_jogador'], estado['moedas_nao'], datetime.datetime.now()))
+                        conn.commit()
+                        conn.close()
+                except Exception as e:
+                    print("[ERRO DB] rodadas: " + str(e))
+                
+                if estado['rodada']>=MAX_RODADAS: estado['fase']='fim'
+                else: estado['rodada']+=1; estado['fase']='aguardando_jogada'
+                snap=dict(estado)
+
+            print("[JOGO] R{} jog={} nao={} s={} dj={} dn={}".format(rod+1,sh,sr,s,dj,dn))
+
+            def nao_react():
+                try:
+                    if p==2: tts.say(texto)
+                    else:
+                        id_f=tts.post.say(texto)
+                        executar_gesto(p,s)
+                        tts.wait(id_f,0)
+                except Exception as ex: print("[ERRO] nao_react: "+str(ex))
+
+            t=threading.Thread(target=nao_react); t.daemon=True; t.start()
+            _send_json(self, snap)
+
+        elif self.path == '/reiniciar':
+            with _lock:
+                # DB Fechar Sessao
+                if estado['session_id']:
+                    try:
+                        interrompida = body.get('interrompida', False)
+                        if interrompida:
+                            winner = 'interrompida'
+                        else:
+                            winner = 'empate'
+                            if estado['moedas_jogador'] > estado['moedas_nao']: winner = 'jogador'
+                            elif estado['moedas_nao'] > estado['moedas_jogador']: winner = 'nao'
+                        
+                        conn = sqlite3.connect('dados_experimento.db')
+                        c = conn.cursor()
+                        c.execute("UPDATE sessoes SET end_time=?, winner=? WHERE id=?", 
+                                  (datetime.datetime.now(), winner, estado['session_id']))
+                        conn.commit()
+                        conn.close()
+                    except Exception as e:
+                        print("[ERRO DB] fechar sessao: " + str(e))
+
+                estado['fase']='aguardando_personalidade'; estado['rodada']=0
+                estado['personalidade']=None; estado['sr']=0
+                estado['moedas_jogador']=0; estado['moedas_nao']=0
+                estado['ultimo_resultado']=None; estado['ultima_fala']=''
+                estado['ultimo_delta_jogador']=0; estado['ultimo_delta_nao']=0
+                estado['session_id']=None
+            print("[JOGO] Reiniciado.")
+            _send_json(self, dict(estado))
+        else:
+            self.send_error(404)
+
+    def log_message(self, fmt, *args):
+        print("[HTTP] "+(fmt%args))
+
+# ─── Main ─────────────────────────────────────────────────
+if __name__ == '__main__':
+    motion.wakeUp()
+    posture.goToPosture("Stand", 0.6)
+    print("="*50)
+    print("  Moedas & Ruinas - Servidor HTTP  porta:{}".format(HTTP_PORT))
+    print("="*50)
+    server = HTTPServer(('0.0.0.0', HTTP_PORT), GameHandler)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[JOGO] Encerrado.")
+        server.server_close()
+

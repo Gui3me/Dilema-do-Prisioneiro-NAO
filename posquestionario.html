@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pós-Questionário - Moedas & Ruínas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/questionario.css">
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="q-header">
+    <div class="q-brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20V10.5L7 8v2.5l3-2.5v2.5l2-1.7 2 1.7V8l3 2.5V20" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 20h16" stroke="#F3D98B" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="15" r="1.4" fill="#F3D98B"/>
+      </svg>
+    </div>
+    <div class="q-header-text">
+      <div class="q-brand-name">Moedas &amp; Ruínas</div>
+      <div class="q-brand-sub">Questionário Pós-Sessão</div>
+    </div>
+  </header>
+
+  <div class="q-progress" id="progress-wrap" style="display:none;">
+    <div class="q-progress-meta">
+      <span class="q-progress-label" id="progress-label">Seção 1 de 2</span>
+      <span class="q-progress-frac" id="progress-frac">50%</span>
+    </div>
+    <div class="q-progress-bar">
+      <div class="q-progress-fill" id="progress-fill" style="width:50%"></div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 0: Identificação -->
+  <section class="q-section active" id="sec-ident">
+    <div class="section-eyebrow">Acesso</div>
+    <h2 class="section-title">Código do Participante</h2>
+    <p class="section-desc">Para iniciar o questionário pós-jogo, por favor insira o código (Q—) que você recebeu no início da sessão.</p>
+
+    <div class="q-group">
+      <label class="q-group-label" for="input-qid">Número do seu código (apenas o número, ex: 1)</label>
+      <input type="number" id="input-qid" class="text-input" placeholder="Ex: 1" style="max-width:200px;">
+    </div>
+    
+    <div class="q-validation" id="val-ident" style="display:none; color:var(--bad);">Código inválido ou jogo não concluído.</div>
+    <div class="q-nav" style="justify-content:flex-start;">
+      <button class="btn btn-primary" id="btn-buscar-qid">Continuar</button>
+    </div>
+  </section>
+
+  <!-- OFERTA -->
+  <section class="q-section" id="sec-offer">
+    <div class="section-eyebrow">Pós-Jogo</div>
+    <h2 class="section-title">Questionário Pós-Sessão</h2>
+    <p class="section-desc">O jogo foi concluído! Gostaríamos que você respondesse a mais algumas perguntas sobre sua experiência. Sua participação é totalmente voluntária.</p>
+
+    <div style="display:flex;align-items:center;gap:10px;background:var(--gold-soft);border:2px solid rgba(184,134,60,.3);border-radius:var(--radius-lg);padding:14px 20px;margin-bottom:24px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div>
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-deep);">Participante</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:var(--ink);" id="offer-participant-label">Q --</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button class="btn btn-primary" id="btn-accept-pos" style="font-size:.95rem;padding:15px 22px; justify-content:center;">
+        Sim, quero responder o pós-questionário
+      </button>
+      <button class="btn btn-outline" id="btn-decline-pos" style="font-size:.88rem;padding:13px 22px; justify-content:center;">
+        Não, prefiro não responder
+      </button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 1: Likert NAO -->
+  <section class="q-section" id="sec-pos-1">
+    <div class="section-eyebrow">Seção 1 de 2</div>
+    <h2 class="section-title">Reconhecimento dos Perfis</h2>
+    <p class="section-desc">Responda as questões abaixo considerando toda a sua experiência no jogo recém-realizado contra o robô NAO.<br><br><strong>1 - Discordo Totalmente &nbsp;2 - Discordo &nbsp;3 - Neutro &nbsp;4 - Concordo &nbsp;5 - Concordo Totalmente</strong></p>
+
+    <div class="likert-group" id="pos-likert-group"></div>
+
+    <div class="q-validation" id="val-pos-1">Responda todas as afirmações para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-primary" id="btn-pos-1-next">Próximo</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: GodSpeed Pós -->
+  <section class="q-section" id="sec-pos-2">
+    <div class="section-eyebrow">Seção 2 de 2</div>
+    <h2 class="section-title">GodSpeed - Pós-Jogo</h2>
+    <p class="section-desc" style="margin-bottom:24px;">Agora que você interagiu com o NAO, posicione-se na escala entre cada par de características opostas.<br><br><strong>A = extremamente o termo da esquerda &nbsp;E = extremamente o termo da direita</strong></p>
+
+    <table class="godspeed-table">
+      <thead>
+        <tr>
+          <th class="th-left" style="width:30%">Característica</th>
+          <th>A</th><th>2</th><th>3</th><th>4</th><th>E</th>
+          <th class="th-right" style="width:30%">Característica</th>
+        </tr>
+      </thead>
+      <tbody id="gs-pos-tbody"></tbody>
+    </table>
+
+    <div class="q-validation" id="val-pos-2">Responda todas as perguntas desta seção para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-pos-2-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-pos-2-submit">Enviar Respostas</button>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section class="q-section" id="sec-done">
+    <div class="done-screen active">
+      <div class="done-icon" style="background:var(--gold-soft); color:var(--gold-deep);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="done-title">Muito obrigado!</div>
+      <div class="done-sub">Suas respostas foram registradas com sucesso. Agradecemos a sua participação.</div>
+      <div style="margin-top: 32px;">
+        <button class="btn btn-outline" onclick="window.location.href='questionario.html'">Voltar ao início</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECLINED -->
+  <section class="q-section" id="sec-declined">
+    <div class="done-screen active">
+      <div class="done-icon" style="background:var(--surface-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div class="done-title">Tudo bem!</div>
+      <div class="done-sub">Você optou por não responder o pós-questionário. Sua participação no jogo foi registrada. Obrigado!</div>
+      <div style="margin-top: 32px;">
+        <button class="btn btn-outline" onclick="window.location.href='questionario.html'">Voltar ao início</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script src="js/posquestionario.js?v=2"></script>
+</body>
+</html>
