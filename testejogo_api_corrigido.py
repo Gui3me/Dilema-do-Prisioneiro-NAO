@@ -55,8 +55,8 @@ def init_db():
 init_db()
 
 # ─── Conexao NAOqi ────────────────────────────────────────
-ROBOT_IP   = "127.0.0.1"
-NAOQI_PORT = 9559
+ROBOT_IP   = "10.43.151.105"
+NAOQI_PORT = 9561
 HTTP_PORT  = 5050
 
 try:

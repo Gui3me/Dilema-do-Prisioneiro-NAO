@@ -50,7 +50,7 @@ def init_db():
 init_db()
 
 # ─── Conexao NAOqi ────────────────────────────────────────
-ROBOT_IP   = "172.20.10.2"
+ROBOT_IP   = "10.43.151.105"
 NAOQI_PORT = 9561
 HTTP_PORT  = 5050
 

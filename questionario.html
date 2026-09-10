@@ -27,7 +27,7 @@
 
   <div class="q-progress" id="progress-wrap">
     <div class="q-progress-meta">
-      <span class="q-progress-label" id="progress-label">Seção 1 de 6</span>
+      <span class="q-progress-label" id="progress-label">Seção 1 de 5</span>
       <span class="q-progress-frac" id="progress-frac">0%</span>
     </div>
     <div class="q-progress-bar">
@@ -35,23 +35,9 @@
     </div>
   </div>
 
-  <!-- SEÇÃO 1: Código -->
+  <!-- SEÇÃO 1: Termo -->
   <section class="q-section active" id="sec-1">
-    <div class="section-eyebrow">Seção 1 de 6</div>
-    <h2 class="section-title">QUESTIONÁRIO — PRÉ-SESSÃO</h2>
-    <div class="q-group">
-      <label class="q-group-label required">Código de Identificação do Participante</label>
-      <input type="text" class="text-input" name="codigo_participante" id="codigo_participante" placeholder="Digite o código fornecido pelo pesquisador" required>
-    </div>
-    <div class="q-validation" id="val-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Preencha o código para continuar.</div>
-    <div class="q-nav">
-      <button class="btn btn-primary" id="btn-1-next">Próximo</button>
-    </div>
-  </section>
-
-  <!-- SEÇÃO 2: Termo -->
-  <section class="q-section" id="sec-2">
-    <div class="section-eyebrow">Seção 2 de 6</div>
+    <div class="section-eyebrow">Seção 1 de 5</div>
     <h2 class="section-title">Termo de Consentimento</h2>
     <div class="consent-text">
       <p>Você está sendo convidado(a) a participar de um estudo sobre <strong>percepção e interação com robôs sociais</strong>. O objetivo principal desta pesquisa é coletar informações sobre o perfil dos participantes, seus conhecimentos e experiências prévias com tecnologias, jogos, ferramentas de Inteligência Artificial (IA) generativa e robôs sociais, bem como suas expectativas e percepções iniciais em relação ao robô NAO.</p>
@@ -66,38 +52,35 @@
         <div class="radio-card"><input type="radio" name="consentimento" id="consent-no" value="no"><label for="consent-no"><span class="radio-dot"></span>Não compreendi os termos ou <strong>NÃO ACEITO</strong> participar desta pesquisa.</label></div>
       </div>
     </div>
-    <div class="q-validation" id="val-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Selecione uma das opções para continuar.</div>
+    <div class="q-validation" id="val-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Selecione uma das opções para continuar.</div>
     <div class="q-nav">
-      <button class="btn btn-outline" id="btn-2-back">Voltar</button>
-      <button class="btn btn-primary" id="btn-2-next">Próximo</button>
+      <button class="btn btn-primary" id="btn-1-next">Próximo</button>
     </div>
   </section>
 
-  <!-- SEÇÃO 3: Dados -->
-  <section class="q-section" id="sec-3">
-    <div class="section-eyebrow">Seção 3 de 6</div>
-    <h2 class="section-title">Dados Demográficos</h2>
+  <!-- SEÇÃO 2: Dados -->
+  <section class="q-section" id="sec-2">
+    <div class="section-eyebrow">Seção 2 de 5</div>
+    <h2 class="section-title">DADOS DEMOGRÁFICOS</h2>
     <div class="q-group">
       <label class="q-group-label required">Qual é seu gênero?</label>
       <div class="radio-cards">
         <div class="radio-card"><input type="radio" name="genero" id="gen-m" value="Masculino"><label for="gen-m"><span class="radio-dot"></span>Masculino</label></div>
         <div class="radio-card"><input type="radio" name="genero" id="gen-f" value="Feminino"><label for="gen-f"><span class="radio-dot"></span>Feminino</label></div>
-        <div class="radio-card"><input type="radio" name="genero" id="gen-nb" value="Não-binário"><label for="gen-nb"><span class="radio-dot"></span>Não-binário / Outro</label></div>
-        <div class="radio-card"><input type="radio" name="genero" id="gen-pnr" value="Prefiro não responder"><label for="gen-pnr"><span class="radio-dot"></span>Prefiro não responder</label></div>
       </div>
     </div>
     <div class="q-group">
-      <label class="q-group-label required">Qual é a sua faixa etária?</label>
+      <label class="q-group-label required">Qual é a sua idade?</label>
       <div class="radio-cards">
-        <div class="radio-card"><input type="radio" name="idade" id="idade-1" value="18-31"><label for="idade-1"><span class="radio-dot"></span>A partir de 18 até 31 anos</label></div>
-        <div class="radio-card"><input type="radio" name="idade" id="idade-2" value="32-46"><label for="idade-2"><span class="radio-dot"></span>A partir de 32 até 46 anos</label></div>
-        <div class="radio-card"><input type="radio" name="idade" id="idade-3" value="47-61"><label for="idade-3"><span class="radio-dot"></span>A partir de 47 até 61 anos</label></div>
-        <div class="radio-card"><input type="radio" name="idade" id="idade-4" value="62-80"><label for="idade-4"><span class="radio-dot"></span>A partir de 62 até 80 anos</label></div>
-        <div class="radio-card"><input type="radio" name="idade" id="idade-5" value="81+"><label for="idade-5"><span class="radio-dot"></span>81 anos ou mais</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-1" value="18-31"><label for="idade-1"><span class="radio-dot"></span>A partir de 18 até 31</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-2" value="32-46"><label for="idade-2"><span class="radio-dot"></span>A partir de 32 até 46</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-3" value="47-61"><label for="idade-3"><span class="radio-dot"></span>A partir de 47 até 61</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-4" value="62-80"><label for="idade-4"><span class="radio-dot"></span>A partir de 62 até 80</label></div>
+        <div class="radio-card"><input type="radio" name="idade" id="idade-5" value="81+"><label for="idade-5"><span class="radio-dot"></span>A partir de 81 ou mais</label></div>
       </div>
     </div>
     <div class="q-group">
-      <label class="q-group-label required">Qual é seu nível de escolaridade?</label>
+      <label class="q-group-label required">Qual é seu nivel de escolaridade?</label>
       <div class="radio-cards">
         <div class="radio-card"><input type="radio" name="escolaridade" id="esc-1" value="Ensino Fundamental Incompleto"><label for="esc-1"><span class="radio-dot"></span>Ensino Fundamental Incompleto</label></div>
         <div class="radio-card"><input type="radio" name="escolaridade" id="esc-2" value="Ensino Fundamental Completo"><label for="esc-2"><span class="radio-dot"></span>Ensino Fundamental Completo</label></div>
@@ -109,40 +92,41 @@
         <div class="radio-card"><input type="radio" name="escolaridade" id="esc-8" value="Pós-graduação Completa"><label for="esc-8"><span class="radio-dot"></span>Pós-graduação Completa</label></div>
       </div>
     </div>
-    <div class="q-validation" id="val-3">Preencha todas as perguntas obrigatórias para continuar.</div>
+    <div class="q-validation" id="val-2">Preencha todas as perguntas obrigatórias para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-2-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-2-next">Próximo</button>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 3: Perfil -->
+  <section class="q-section" id="sec-3">
+    <div class="section-eyebrow">Seção 3 de 5</div>
+    <h2 class="section-title">CONHECIMENTO GERAL E PERFIL DO JOGADOR</h2>
+    <p class="section-desc">Conhecimento geral sobre jogos, robótica social e o "Dilema do Prisioneiro"</p>
+    <div class="q-group">
+      <label class="q-group-label required">Qual é sua frequência de jogos digitais, tabuleiro ou cartas que exigem estratégia:</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Nunca</span><span>5 - Diariamente</span></div><div class="scale-wrap" id="scale-jogos"></div></div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Qual seu nivel de contato com robôs sociais (como o NAO)?</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Nunca</span><span>5 - Diariamente</span></div><div class="scale-wrap" id="scale-robos"></div></div>
+    </div>
+    <div class="q-group">
+      <label class="q-group-label required">Qual o seu nivel de conhecimento sobre o "Dilema do Prisioneiro"?</label>
+      <div class="scale-row"><div class="scale-caption"><span>1 - Nenhum conhecimento</span><span>5 - Conhecimento avançado</span></div><div class="scale-wrap" id="scale-dilema"></div></div>
+    </div>
+    
+    <div class="q-validation" id="val-3">Preencha todas as escalas para continuar.</div>
     <div class="q-nav">
       <button class="btn btn-outline" id="btn-3-back">Voltar</button>
       <button class="btn btn-primary" id="btn-3-next">Próximo</button>
     </div>
   </section>
 
-  <!-- SEÇÃO 4: Perfil -->
+  <!-- SEÇÃO 4: GodSpeed -->
   <section class="q-section" id="sec-4">
-    <div class="section-eyebrow">Seção 4 de 6</div>
-    <h2 class="section-title">Conhecimento e Perfil do Jogador</h2>
-    <div class="q-group">
-      <label class="q-group-label required">Frequência com que joga videogames (qualquer plataforma)</label>
-      <div class="scale-row"><div class="scale-caption"><span>1 - Nunca</span><span>5 - Todos os dias</span></div><div class="scale-wrap" id="scale-jogos"></div></div>
-    </div>
-    <div class="q-group">
-      <label class="q-group-label required">Nível de contato prévio com robôs</label>
-      <div class="scale-row"><div class="scale-caption"><span>1 - Nenhum contato</span><span>5 - Contato frequente</span></div><div class="scale-wrap" id="scale-robos"></div></div>
-    </div>
-    <div class="q-group">
-      <label class="q-group-label required">Conhecimento sobre o "Dilema do Prisioneiro"</label>
-      <div class="scale-row"><div class="scale-caption"><span>1 - Desconheço</span><span>5 - Conheço muito bem</span></div><div class="scale-wrap" id="scale-dilema"></div></div>
-    </div>
-    
-    <div class="q-validation" id="val-4">Preencha todas as escalas para continuar.</div>
-    <div class="q-nav">
-      <button class="btn btn-outline" id="btn-4-back">Voltar</button>
-      <button class="btn btn-primary" id="btn-4-next">Próximo</button>
-    </div>
-  </section>
-
-  <!-- SEÇÃO 5: GodSpeed -->
-  <section class="q-section" id="sec-5">
-    <div class="section-eyebrow">Seção 5 de 6</div>
+    <div class="section-eyebrow">Seção 4 de 5</div>
     <h2 class="section-title">Percepção Inicial do NAO</h2>
     <p class="section-desc" style="margin-bottom:24px;">Observe o robô NAO que está na sala. Sem interagir, classifique sua percepção inicial sobre ele em relação às características abaixo.<br><br><strong>A = extremamente o termo da esquerda &nbsp;E = extremamente o termo da direita</strong></p>
     
@@ -157,15 +141,15 @@
       <tbody id="gs-tbody"></tbody>
     </table>
 
-    <div class="q-validation" id="val-5">Avalie todos os itens na tabela para continuar.</div>
+    <div class="q-validation" id="val-4">Avalie todos os itens na tabela para continuar.</div>
     <div class="q-nav">
-      <button class="btn btn-outline" id="btn-5-back">Voltar</button>
-      <button class="btn btn-primary" id="btn-5-submit">Enviar Questionário</button>
+      <button class="btn btn-outline" id="btn-4-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-4-submit">Enviar Questionário</button>
     </div>
   </section>
 
-  <!-- SEÇÃO 6: Tela Final e Código -->
-  <section class="q-section" id="sec-6">
+  <!-- SEÇÃO 5: Tela Final e Código -->
+  <section class="q-section" id="sec-5">
     <div class="done-screen active">
       <div class="done-icon" style="background:var(--gold-soft); color:var(--gold-deep);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

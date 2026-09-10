@@ -5,8 +5,9 @@
   var NAO_API = 'http://' + storedIp + ':5050';
 
   var currentSection = 1;
-  var TOTAL_SECTIONS = 6;
+  var TOTAL_SECTIONS = 5;
   var participantId = null;
+  var _preStartTime = null;
 
   var progressLabel = document.getElementById('progress-label');
   var progressFrac  = document.getElementById('progress-frac');
@@ -32,7 +33,7 @@
     window.scrollTo(0,0);
   }
 
-  for(let i=1; i<=5; i++) {
+  for(let i=1; i<=4; i++) {
     var btnNext = document.getElementById('btn-'+i+'-next');
     var btnBack = document.getElementById('btn-'+i+'-back');
     if(btnNext) {
@@ -41,6 +42,7 @@
           if(validateSection(idx)) {
             var val = document.getElementById('val-'+idx);
             if(val) val.style.display = 'none';
+            if(idx === 1 && !_preStartTime) _preStartTime = Date.now();
             showSection(idx+1);
           } else {
             var val = document.getElementById('val-'+idx);
@@ -139,38 +141,33 @@
 
   function validateSection(num) {
     if(num === 1) {
-      var cod = document.getElementById('codigo_participante');
-      if(!cod || cod.value.trim() === '') return false;
-      return true;
-    }
-    if(num === 2) {
       var consent = document.querySelector('input[name="consentimento"]:checked');
       if(!consent) return false;
       if(consent.value === 'no') {
-        if(confirm('Tem certeza que n\u00e3o deseja participar da pesquisa? O jogo ser\u00e1 liberado sem coleta de dados.')) {
+        if(confirm('Tem certeza que não deseja participar da pesquisa? O jogo será liberado sem coleta de dados.')) {
           fetch(NAO_API + '/questionario/nao-participante', {
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({session_id: null})
           }).catch(function(){});
-          document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;"><h3>Obrigado!</h3><p>O pesquisador iniciar\u00e1 o jogo em instantes.</p></div>';
+          document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;"><h3>Obrigado!</h3><p>O pesquisador iniciará o jogo em instantes.</p></div>';
         }
         return false;
       }
       return true;
     }
-    if(num === 3) {
+    if(num === 2) {
       if(!document.querySelector('input[name="genero"]:checked') ||
          !document.querySelector('input[name="idade"]:checked') ||
          !document.querySelector('input[name="escolaridade"]:checked')) return false;
       return true;
     }
-    if(num === 4) {
+    if(num === 3) {
       if(getScaleValue('freq_jogos') === null ||
          getScaleValue('contato_robos') === null ||
          getScaleValue('conhecimento_dilema') === null) return false;
       return true;
     }
-    if(num === 5) {
+    if(num === 4) {
       for(var i=1; i<=24; i++) {
         if(!document.querySelector('input[name="gs_pre_'+i+'"]:checked')) return false;
       }
@@ -179,11 +176,11 @@
     return true;
   }
 
-  var btnSubmit = document.getElementById('btn-5-submit');
+  var btnSubmit = document.getElementById('btn-4-submit');
   if(btnSubmit) {
     btnSubmit.addEventListener('click', function(){
-      if(!validateSection(5)) {
-        var val = document.getElementById('val-5');
+      if(!validateSection(4)) {
+        var val = document.getElementById('val-4');
         if(val) val.style.display = 'flex';
         return;
       }
@@ -191,7 +188,6 @@
       btnSubmit.textContent = 'Enviando...';
 
       var payload = {
-        codigo_participante: document.getElementById('codigo_participante').value.trim(),
         genero: document.querySelector('input[name="genero"]:checked').value,
         idade: document.querySelector('input[name="idade"]:checked').value,
         escolaridade: document.querySelector('input[name="escolaridade"]:checked').value,
@@ -207,6 +203,8 @@
         settled = true;
         usarFallbackOffline(payload);
       }, 8000);
+
+      payload.tempo_pre_segundos = _preStartTime ? Math.round((Date.now() - _preStartTime) / 1000) : null;
 
       fetch(NAO_API + '/questionario/pre', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -224,7 +222,7 @@
         participantId = data.questionario_id;
         localStorage.setItem('questionario_id', participantId);
         document.getElementById('waiting-id-display').textContent = 'Q' + participantId;
-        showSection(6);
+        showSection(5);
       })
       .catch(function(){
         if(settled) return;
@@ -249,7 +247,7 @@
       note.textContent = 'Sem conex\u00e3o com backend - dado salvo localmente';
       badge.appendChild(note);
     }
-    showSection(6);
+    showSection(5);
   }
 
   var btnNovoPre = document.getElementById('btn-novo-pre');

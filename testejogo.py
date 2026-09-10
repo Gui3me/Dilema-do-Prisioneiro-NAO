@@ -7,7 +7,7 @@ from naoqi import ALProxy
 # CONFIGURAÇÕES DE CONEXÃO DO ROBÔ NAO
 # ==============================================================================
 ROBOT_IP = "10.43.151.105"
-PORT = 9559
+PORT = 9561
 
 try:
     motion = ALProxy("ALMotion", ROBOT_IP, PORT)

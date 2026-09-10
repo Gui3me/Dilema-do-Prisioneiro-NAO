@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pós-Questionário - Moedas & Ruínas</title>
+<title>Pós-Questionário - Moedas &amp; Ruínas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/questionario.css">
 </head>
 <body>
 <div class="page-wrap">
-
   <header class="q-header">
     <div class="q-brand-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,40 +24,19 @@
       <div class="q-brand-sub">Questionário Pós-Sessão</div>
     </div>
   </header>
-
   <div class="q-progress" id="progress-wrap" style="display:none;">
     <div class="q-progress-meta">
-      <span class="q-progress-label" id="progress-label">Seção 1 de 2</span>
-      <span class="q-progress-frac" id="progress-frac">50%</span>
+      <span class="q-progress-label" id="progress-label">Seção 1 de 4</span>
+      <span class="q-progress-frac" id="progress-frac">25%</span>
     </div>
     <div class="q-progress-bar">
-      <div class="q-progress-fill" id="progress-fill" style="width:50%"></div>
+      <div class="q-progress-fill" id="progress-fill" style="width:25%"></div>
     </div>
   </div>
-
-  <!-- SEÇÃO 0: Identificação -->
-  <section class="q-section active" id="sec-ident">
-    <div class="section-eyebrow">Acesso</div>
-    <h2 class="section-title">Código do Participante</h2>
-    <p class="section-desc">Para iniciar o questionário pós-jogo, por favor insira o código (Q—) que você recebeu no início da sessão.</p>
-
-    <div class="q-group">
-      <label class="q-group-label" for="input-qid">Número do seu código (apenas o número, ex: 1)</label>
-      <input type="number" id="input-qid" class="text-input" placeholder="Ex: 1" style="max-width:200px;">
-    </div>
-    
-    <div class="q-validation" id="val-ident" style="display:none; color:var(--bad);">Código inválido ou jogo não concluído.</div>
-    <div class="q-nav" style="justify-content:flex-start;">
-      <button class="btn btn-primary" id="btn-buscar-qid">Continuar</button>
-    </div>
-  </section>
-
-  <!-- OFERTA -->
-  <section class="q-section" id="sec-offer">
+  <section class="q-section active" id="sec-offer">
     <div class="section-eyebrow">Pós-Jogo</div>
     <h2 class="section-title">Questionário Pós-Sessão</h2>
     <p class="section-desc">O jogo foi concluído! Gostaríamos que você respondesse a mais algumas perguntas sobre sua experiência. Sua participação é totalmente voluntária.</p>
-
     <div style="display:flex;align-items:center;gap:10px;background:var(--gold-soft);border:2px solid rgba(184,134,60,.3);border-radius:var(--radius-lg);padding:14px 20px;margin-bottom:24px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <div>
@@ -66,56 +44,97 @@
         <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:var(--ink);" id="offer-participant-label">Q --</div>
       </div>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <button class="btn btn-primary" id="btn-accept-pos" style="font-size:.95rem;padding:15px 22px; justify-content:center;">
-        Sim, quero responder o pós-questionário
-      </button>
-      <button class="btn btn-outline" id="btn-decline-pos" style="font-size:.88rem;padding:13px 22px; justify-content:center;">
-        Não, prefiro não responder
-      </button>
+      <button class="btn btn-primary" id="btn-accept-pos" style="font-size:.95rem;padding:15px 22px; justify-content:center;">Sim, quero responder o pós-questionário</button>
+      <button class="btn btn-outline" id="btn-decline-pos" style="font-size:.88rem;padding:13px 22px; justify-content:center;">Não, prefiro não responder</button>
     </div>
   </section>
-
-  <!-- SEÇÃO 1: Likert NAO -->
-  <section class="q-section" id="sec-pos-1">
-    <div class="section-eyebrow">Seção 1 de 2</div>
-    <h2 class="section-title">Reconhecimento dos Perfis</h2>
-    <p class="section-desc">Responda as questões abaixo considerando toda a sua experiência no jogo recém-realizado contra o robô NAO.<br><br><strong>1 - Discordo Totalmente &nbsp;2 - Discordo &nbsp;3 - Neutro &nbsp;4 - Concordo &nbsp;5 - Concordo Totalmente</strong></p>
-
-    <div class="likert-group" id="pos-likert-group"></div>
-
-    <div class="q-validation" id="val-pos-1">Responda todas as afirmações para continuar.</div>
+  <section class="q-section" id="sec-A">
+    <div class="section-eyebrow">Seção 1 de 4</div>
+    <h2 class="section-title">A. Reconhecimento dos Perfis de Comportamento do NAO</h2>
+    <p class="section-desc">Indique o quanto concorda com as afirmações sobre a postura e personalidade demonstradas pelo NAO durante o jogo:</p>
+    <table class="godspeed-table" id="pos-likert-A-table">
+      <thead>
+        <tr>
+          <th class="th-left" style="width:55%; text-align:left;">Afirmação</th>
+          <th style="text-align:center;">1<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(DT)</span></th>
+          <th style="text-align:center;">2<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(D)</span></th>
+          <th style="text-align:center;">3<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(N)</span></th>
+          <th style="text-align:center;">4<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(C)</span></th>
+          <th style="text-align:center;">5<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(CT)</span></th>
+        </tr>
+      </thead>
+      <tbody id="pos-likert-A"></tbody>
+    </table>
+    <div class="q-validation" id="val-A">Responda todas as afirmações para continuar.</div>
+    <div class="q-nav"><button class="btn btn-primary" id="btn-A-next">Próximo</button></div>
+  </section>
+  <section class="q-section" id="sec-B">
+    <div class="section-eyebrow">Seção 2 de 4</div>
+    <h2 class="section-title">B. Percepção da Expressão Emocional</h2>
+    <p class="section-desc">Avalie como você percebeu as reações afirmativas, falas e o tom de voz do NAO após o resultado das rodadas:</p>
+    <table class="godspeed-table" id="pos-likert-B-table">
+      <thead>
+        <tr>
+          <th class="th-left" style="width:55%; text-align:left;">Afirmação</th>
+          <th style="text-align:center;">1<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(DT)</span></th>
+          <th style="text-align:center;">2<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(D)</span></th>
+          <th style="text-align:center;">3<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(N)</span></th>
+          <th style="text-align:center;">4<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(C)</span></th>
+          <th style="text-align:center;">5<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(CT)</span></th>
+        </tr>
+      </thead>
+      <tbody id="pos-likert-B"></tbody>
+    </table>
+    <div class="q-validation" id="val-B">Responda todas as afirmações para continuar.</div>
     <div class="q-nav">
-      <button class="btn btn-primary" id="btn-pos-1-next">Próximo</button>
+      <button class="btn btn-outline" id="btn-B-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-B-next">Próximo</button>
     </div>
   </section>
-
-  <!-- SEÇÃO 2: GodSpeed Pós -->
-  <section class="q-section" id="sec-pos-2">
-    <div class="section-eyebrow">Seção 2 de 2</div>
-    <h2 class="section-title">GodSpeed - Pós-Jogo</h2>
-    <p class="section-desc" style="margin-bottom:24px;">Agora que você interagiu com o NAO, posicione-se na escala entre cada par de características opostas.<br><br><strong>A = extremamente o termo da esquerda &nbsp;E = extremamente o termo da direita</strong></p>
-
+  <section class="q-section" id="sec-C">
+    <div class="section-eyebrow">Seção 3 de 4</div>
+    <h2 class="section-title">C. Tomada de Decisão e Estratégia do Jogador</h2>
+    <p class="section-desc">Avalie como o comportamento do NAO impactou as suas próprias jogadas:</p>
+    <table class="godspeed-table" id="pos-likert-C-table">
+      <thead>
+        <tr>
+          <th class="th-left" style="width:55%; text-align:left;">Afirmação</th>
+          <th style="text-align:center;">1<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(DT)</span></th>
+          <th style="text-align:center;">2<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(D)</span></th>
+          <th style="text-align:center;">3<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(N)</span></th>
+          <th style="text-align:center;">4<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(C)</span></th>
+          <th style="text-align:center;">5<br><span style="font-size:.68em;font-weight:600;color:var(--ink-faint);">(CT)</span></th>
+        </tr>
+      </thead>
+      <tbody id="pos-likert-C"></tbody>
+    </table>
+    <div class="q-validation" id="val-C">Responda todas as afirmações para continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-outline" id="btn-C-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-C-next">Próximo</button>
+    </div>
+  </section>
+  <section class="q-section" id="sec-gs-pos">
+    <div class="section-eyebrow">Seção 4 de 4</div>
+    <h2 class="section-title">E. Percepção do NAO Após a Interação (Escala Godspeed Completa)</h2>
+    <p class="section-desc" style="margin-bottom:24px;">Agora, considerando TODA a experiência que você acabou de realizar com o NAO, indique sua impressão sobre ele. Esta seção é idêntica à do início do estudo para nos ajudar a medir cientificamente se e como a sua percepção do robô mudou após a interação de jogo.<br><br><strong>A = extremamente o termo da esquerda &nbsp;E = extremamente o termo da direita</strong></p>
     <table class="godspeed-table">
       <thead>
         <tr>
           <th class="th-left" style="width:30%">Característica</th>
-          <th>A</th><th>2</th><th>3</th><th>4</th><th>E</th>
+          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
           <th class="th-right" style="width:30%">Característica</th>
         </tr>
       </thead>
       <tbody id="gs-pos-tbody"></tbody>
     </table>
-
-    <div class="q-validation" id="val-pos-2">Responda todas as perguntas desta seção para continuar.</div>
+    <div class="q-validation" id="val-gs-pos">Responda todas as perguntas desta seção para continuar.</div>
     <div class="q-nav">
-      <button class="btn btn-outline" id="btn-pos-2-back">Voltar</button>
-      <button class="btn btn-primary" id="btn-pos-2-submit">Enviar Respostas</button>
+      <button class="btn btn-outline" id="btn-gs-pos-back">Voltar</button>
+      <button class="btn btn-primary" id="btn-gs-pos-submit">Enviar Respostas</button>
     </div>
   </section>
-
-  <!-- DONE -->
   <section class="q-section" id="sec-done">
     <div class="done-screen active">
       <div class="done-icon" style="background:var(--gold-soft); color:var(--gold-deep);">
@@ -128,8 +147,6 @@
       </div>
     </div>
   </section>
-
-  <!-- DECLINED -->
   <section class="q-section" id="sec-declined">
     <div class="done-screen active">
       <div class="done-icon" style="background:var(--surface-soft);">
@@ -142,8 +159,7 @@
       </div>
     </div>
   </section>
-
 </div>
-<script src="js/posquestionario.js?v=2"></script>
+<script src="js/posquestionario.js?v=3"></script>
 </body>
 </html>

@@ -85,9 +85,14 @@ def init_db():
             godspeed_2 INTEGER,
             godspeed_3 INTEGER,
             godspeed_4 INTEGER,
-            godspeed_5 INTEGER
+            godspeed_5 INTEGER,
+            tempo_pre_segundos INTEGER
         )
     ''')
+    try:
+        c.execute('ALTER TABLE pre_questionarios ADD COLUMN tempo_pre_segundos INTEGER')
+    except Exception:
+        pass
     # Tabela de pos-questionarios
     c.execute('''
         CREATE TABLE IF NOT EXISTS pos_questionarios (
@@ -95,18 +100,46 @@ def init_db():
             questionario_id INTEGER,
             session_id INTEGER,
             timestamp DATETIME,
-            mudancas_nao INTEGER,
-            nao_amigavel INTEGER,
-            nao_competitivo INTEGER,
-            nao_vitimizacao INTEGER,
-            nao_neutro INTEGER,
+            A1 INTEGER, A2 INTEGER, A3 INTEGER, A4 INTEGER, A5 INTEGER,
+            B1 INTEGER, B2 INTEGER, B3 INTEGER,
+            C1 INTEGER, C2 INTEGER, C3 INTEGER, C4 INTEGER, C5 INTEGER,
             godspeed_pos_1 INTEGER,
             godspeed_pos_2 INTEGER,
             godspeed_pos_3 INTEGER,
             godspeed_pos_4 INTEGER,
-            godspeed_pos_5 INTEGER
+            godspeed_pos_5 INTEGER,
+            godspeed_pos_6 INTEGER,
+            godspeed_pos_7 INTEGER,
+            godspeed_pos_8 INTEGER,
+            godspeed_pos_9 INTEGER,
+            godspeed_pos_10 INTEGER,
+            godspeed_pos_11 INTEGER,
+            godspeed_pos_12 INTEGER,
+            godspeed_pos_13 INTEGER,
+            godspeed_pos_14 INTEGER,
+            godspeed_pos_15 INTEGER,
+            godspeed_pos_16 INTEGER,
+            godspeed_pos_17 INTEGER,
+            godspeed_pos_18 INTEGER,
+            godspeed_pos_19 INTEGER,
+            godspeed_pos_20 INTEGER,
+            godspeed_pos_21 INTEGER,
+            godspeed_pos_22 INTEGER,
+            godspeed_pos_23 INTEGER,
+            godspeed_pos_24 INTEGER,
+            tempo_pos_segundos INTEGER
         )
     ''')
+    for col in ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5',
+                'godspeed_pos_6','godspeed_pos_7','godspeed_pos_8','godspeed_pos_9','godspeed_pos_10',
+                'godspeed_pos_11','godspeed_pos_12','godspeed_pos_13','godspeed_pos_14','godspeed_pos_15',
+                'godspeed_pos_16','godspeed_pos_17','godspeed_pos_18','godspeed_pos_19','godspeed_pos_20',
+                'godspeed_pos_21','godspeed_pos_22','godspeed_pos_23','godspeed_pos_24',
+                'tempo_pos_segundos']:
+        try:
+            c.execute('ALTER TABLE pos_questionarios ADD COLUMN ' + col + ' INTEGER')
+        except Exception:
+            pass
     # Tabela de nao-participantes (sem questionario)
     c.execute('''
         CREATE TABLE IF NOT EXISTS nao_participantes (
@@ -129,8 +162,8 @@ _jogo_liberado = {
 _lock_lib = threading.Lock()
 
 # ─── Conexao NAOqi ────────────────────────────────────────
-ROBOT_IP   = "127.0.0.1"
-NAOQI_PORT = 9559
+ROBOT_IP   = "10.43.151.105"
+NAOQI_PORT = 9561
 HTTP_PORT  = 5050
 
 try:
@@ -628,8 +661,9 @@ class GameHandler(BaseHTTPRequestHandler):
                     INSERT INTO pre_questionarios
                     (timestamp, status, genero, idade, escolaridade, freq_jogos,
                      contato_robos, conhecimento_dilema,
-                     godspeed_1, godspeed_2, godspeed_3, godspeed_4, godspeed_5)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                     godspeed_1, godspeed_2, godspeed_3, godspeed_4, godspeed_5,
+                     tempo_pre_segundos)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ''', (
                     datetime.datetime.now(),
                     'aguardando',
@@ -643,7 +677,8 @@ class GameHandler(BaseHTTPRequestHandler):
                     body.get('godspeed_2', 0),
                     body.get('godspeed_3', 0),
                     body.get('godspeed_4', 0),
-                    body.get('godspeed_5', 0)
+                    body.get('godspeed_5', 0),
+                    body.get('tempo_pre_segundos', None)
                 ))
                 qid = c.lastrowid
                 conn.commit()
@@ -665,21 +700,30 @@ class GameHandler(BaseHTTPRequestHandler):
                 c.execute('''
                     INSERT INTO pos_questionarios
                     (questionario_id, session_id, timestamp,
-                     mudancas_nao, nao_amigavel, nao_competitivo, nao_vitimizacao, nao_neutro,
-                     godspeed_pos_1, godspeed_pos_2, godspeed_pos_3, godspeed_pos_4, godspeed_pos_5)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                     A1, A2, A3, A4, A5,
+                     B1, B2, B3,
+                     C1, C2, C3, C4, C5,
+                     godspeed_pos_1, godspeed_pos_2, godspeed_pos_3, godspeed_pos_4, godspeed_pos_5,
+                     godspeed_pos_6, godspeed_pos_7, godspeed_pos_8, godspeed_pos_9, godspeed_pos_10,
+                     godspeed_pos_11, godspeed_pos_12, godspeed_pos_13, godspeed_pos_14, godspeed_pos_15,
+                     godspeed_pos_16, godspeed_pos_17, godspeed_pos_18, godspeed_pos_19, godspeed_pos_20,
+                     godspeed_pos_21, godspeed_pos_22, godspeed_pos_23, godspeed_pos_24,
+                     tempo_pos_segundos)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ''', (
                     qid, sid, datetime.datetime.now(),
-                    body.get('mudancas_nao', 0),
-                    body.get('nao_amigavel', 0),
-                    body.get('nao_competitivo', 0),
-                    body.get('nao_vitimizacao', 0),
-                    body.get('nao_neutro', 0),
-                    body.get('godspeed_pos_1', 0),
-                    body.get('godspeed_pos_2', 0),
-                    body.get('godspeed_pos_3', 0),
-                    body.get('godspeed_pos_4', 0),
-                    body.get('godspeed_pos_5', 0)
+                    body.get('A1', 0), body.get('A2', 0), body.get('A3', 0), body.get('A4', 0), body.get('A5', 0),
+                    body.get('B1', 0), body.get('B2', 0), body.get('B3', 0),
+                    body.get('C1', 0), body.get('C2', 0), body.get('C3', 0), body.get('C4', 0), body.get('C5', 0),
+                    body.get('godspeed_pos_1', 0), body.get('godspeed_pos_2', 0), body.get('godspeed_pos_3', 0),
+                    body.get('godspeed_pos_4', 0), body.get('godspeed_pos_5', 0), body.get('godspeed_pos_6', 0),
+                    body.get('godspeed_pos_7', 0), body.get('godspeed_pos_8', 0), body.get('godspeed_pos_9', 0),
+                    body.get('godspeed_pos_10', 0), body.get('godspeed_pos_11', 0), body.get('godspeed_pos_12', 0),
+                    body.get('godspeed_pos_13', 0), body.get('godspeed_pos_14', 0), body.get('godspeed_pos_15', 0),
+                    body.get('godspeed_pos_16', 0), body.get('godspeed_pos_17', 0), body.get('godspeed_pos_18', 0),
+                    body.get('godspeed_pos_19', 0), body.get('godspeed_pos_20', 0), body.get('godspeed_pos_21', 0),
+                    body.get('godspeed_pos_22', 0), body.get('godspeed_pos_23', 0), body.get('godspeed_pos_24', 0),
+                    body.get('tempo_pos_segundos', None)
                 ))
                 # Atualizar status do pre
                 if qid:

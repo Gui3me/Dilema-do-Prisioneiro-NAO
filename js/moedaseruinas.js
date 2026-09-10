@@ -186,7 +186,9 @@
     treasureFill.style.width = ((stonesLeft / MAX_ROUNDS) * 100) + '%';
   }
 
+  var _jogoStartTime = null;
   function startGame(){
+    _jogoStartTime = Date.now();
     state = { round: 1, youCoins: 0, naoCoins: 0, gameFim: false };
     updateTreasureBar(MAX_ROUNDS);
     updateCoinDisplay(true);
@@ -457,6 +459,12 @@
       '</div>' +
       '<div class="cta-row"><button class="btn btn-primary" id="btn-restart">Chamar o pesquisador</button></div>';
 
+    // Save game time to localStorage
+    if(_jogoStartTime) {
+      var tempoJogoSeg = Math.round((Date.now() - _jogoStartTime) / 1000);
+      localStorage.setItem('tempo_jogo_segundos', tempoJogoSeg);
+      _jogoStartTime = null;
+    }
     showScreen('screen-end');
 
     document.getElementById('btn-restart').addEventListener('click', function(){
