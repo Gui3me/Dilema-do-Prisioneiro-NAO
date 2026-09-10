@@ -510,6 +510,7 @@
 
 /* Custom CSS Tooltip */
 [data-tooltip] { position: relative; }
-[data-tooltip]::after { content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translate(50%, -4px); margin-top: 8px; background: #111111; color: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 600; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 100; box-shadow: 0 4px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); }
-[data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; transform: translate(50%, 0); }
+[data-tooltip]:hover { z-index: 100; }
+[data-tooltip]::after { content: attr(data-tooltip); position: absolute; top: 50%; right: 100%; transform: translateY(-50%) translateX(8px); margin-right: 12px; background: #111111; color: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 600; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 100; box-shadow: 0 4px 8px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); }
+[data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; transform: translateY(-50%) translateX(0); }
 
