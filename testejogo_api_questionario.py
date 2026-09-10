@@ -86,13 +86,37 @@ def init_db():
             godspeed_3 INTEGER,
             godspeed_4 INTEGER,
             godspeed_5 INTEGER,
+            godspeed_6 INTEGER,
+            godspeed_7 INTEGER,
+            godspeed_8 INTEGER,
+            godspeed_9 INTEGER,
+            godspeed_10 INTEGER,
+            godspeed_11 INTEGER,
+            godspeed_12 INTEGER,
+            godspeed_13 INTEGER,
+            godspeed_14 INTEGER,
+            godspeed_15 INTEGER,
+            godspeed_16 INTEGER,
+            godspeed_17 INTEGER,
+            godspeed_18 INTEGER,
+            godspeed_19 INTEGER,
+            godspeed_20 INTEGER,
+            godspeed_21 INTEGER,
+            godspeed_22 INTEGER,
+            godspeed_23 INTEGER,
+            godspeed_24 INTEGER,
             tempo_pre_segundos INTEGER
         )
     ''')
-    try:
-        c.execute('ALTER TABLE pre_questionarios ADD COLUMN tempo_pre_segundos INTEGER')
-    except Exception:
-        pass
+    for col in ['godspeed_6','godspeed_7','godspeed_8','godspeed_9','godspeed_10',
+                'godspeed_11','godspeed_12','godspeed_13','godspeed_14','godspeed_15',
+                'godspeed_16','godspeed_17','godspeed_18','godspeed_19','godspeed_20',
+                'godspeed_21','godspeed_22','godspeed_23','godspeed_24',
+                'tempo_pre_segundos']:
+        try:
+            c.execute('ALTER TABLE pre_questionarios ADD COLUMN ' + col + ' INTEGER')
+        except Exception:
+            pass
     # Tabela de pos-questionarios
     c.execute('''
         CREATE TABLE IF NOT EXISTS pos_questionarios (
@@ -664,8 +688,12 @@ class GameHandler(BaseHTTPRequestHandler):
                     (timestamp, status, genero, idade, escolaridade, freq_jogos,
                      contato_robos, conhecimento_dilema,
                      godspeed_1, godspeed_2, godspeed_3, godspeed_4, godspeed_5,
+                     godspeed_6, godspeed_7, godspeed_8, godspeed_9, godspeed_10,
+                     godspeed_11, godspeed_12, godspeed_13, godspeed_14, godspeed_15,
+                     godspeed_16, godspeed_17, godspeed_18, godspeed_19, godspeed_20,
+                     godspeed_21, godspeed_22, godspeed_23, godspeed_24,
                      tempo_pre_segundos)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ''', (
                     datetime.datetime.now(),
                     'aguardando',
@@ -675,11 +703,14 @@ class GameHandler(BaseHTTPRequestHandler):
                     body.get('freq_jogos', 0),
                     body.get('contato_robos', 0),
                     body.get('conhecimento_dilema', 0),
-                    body.get('godspeed_1', 0),
-                    body.get('godspeed_2', 0),
-                    body.get('godspeed_3', 0),
-                    body.get('godspeed_4', 0),
-                    body.get('godspeed_5', 0),
+                    body.get('godspeed_1', 0), body.get('godspeed_2', 0), body.get('godspeed_3', 0),
+                    body.get('godspeed_4', 0), body.get('godspeed_5', 0), body.get('godspeed_6', 0),
+                    body.get('godspeed_7', 0), body.get('godspeed_8', 0), body.get('godspeed_9', 0),
+                    body.get('godspeed_10', 0), body.get('godspeed_11', 0), body.get('godspeed_12', 0),
+                    body.get('godspeed_13', 0), body.get('godspeed_14', 0), body.get('godspeed_15', 0),
+                    body.get('godspeed_16', 0), body.get('godspeed_17', 0), body.get('godspeed_18', 0),
+                    body.get('godspeed_19', 0), body.get('godspeed_20', 0), body.get('godspeed_21', 0),
+                    body.get('godspeed_22', 0), body.get('godspeed_23', 0), body.get('godspeed_24', 0),
                     body.get('tempo_pre_segundos', None)
                 ))
                 qid = c.lastrowid
