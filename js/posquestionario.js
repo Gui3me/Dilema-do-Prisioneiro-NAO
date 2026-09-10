@@ -271,11 +271,14 @@
       btnGsPosSubmit.textContent = 'Enviando...';
 
       var tempoPosSegundos = _posStartTime ? Math.round((Date.now() - _posStartTime) / 1000) : null;
+      var tempoJogoSegundos = localStorage.getItem('tempo_jogo_segundos');
+      tempoJogoSegundos = tempoJogoSegundos ? parseInt(tempoJogoSegundos, 10) : null;
 
       var payload = {
         questionario_id: questionarioId,
         session_id: sessionId,
-        tempo_pos_segundos: tempoPosSegundos
+        tempo_pos_segundos: tempoPosSegundos,
+        tempo_jogo_segundos: tempoJogoSegundos
       };
 
       likertItemsA.forEach(function(item){
@@ -298,6 +301,7 @@
       .then(function(r){ if(!r.ok) throw new Error(); return r.json(); })
       .then(function(data){
         localStorage.removeItem('questionario_id');
+        localStorage.removeItem('tempo_jogo_segundos');
         showSection('sec-done');
       })
       .catch(function(err){

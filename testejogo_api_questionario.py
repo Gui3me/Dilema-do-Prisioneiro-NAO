@@ -127,7 +127,9 @@ def init_db():
             godspeed_pos_22 INTEGER,
             godspeed_pos_23 INTEGER,
             godspeed_pos_24 INTEGER,
-            tempo_pos_segundos INTEGER
+            tempo_pos_segundos INTEGER,
+            tempo_jogo_segundos INTEGER,
+            tempo_total_segundos INTEGER
         )
     ''')
     for col in ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5',
@@ -135,7 +137,7 @@ def init_db():
                 'godspeed_pos_11','godspeed_pos_12','godspeed_pos_13','godspeed_pos_14','godspeed_pos_15',
                 'godspeed_pos_16','godspeed_pos_17','godspeed_pos_18','godspeed_pos_19','godspeed_pos_20',
                 'godspeed_pos_21','godspeed_pos_22','godspeed_pos_23','godspeed_pos_24',
-                'tempo_pos_segundos']:
+                'tempo_pos_segundos','tempo_jogo_segundos','tempo_total_segundos']:
         try:
             c.execute('ALTER TABLE pos_questionarios ADD COLUMN ' + col + ' INTEGER')
         except Exception:
@@ -697,6 +699,18 @@ class GameHandler(BaseHTTPRequestHandler):
                 sid = body.get('session_id')
                 conn = sqlite3.connect('dados_experimento_quest.db')
                 c = conn.cursor()
+                tempo_pos = body.get('tempo_pos_segundos')
+                if tempo_pos is None: tempo_pos = 0
+                tempo_jogo = body.get('tempo_jogo_segundos')
+                if tempo_jogo is None: tempo_jogo = 0
+                tempo_pre = 0
+                if qid:
+                    c.execute("SELECT tempo_pre_segundos FROM pre_questionarios WHERE id=?", (qid,))
+                    row = c.fetchone()
+                    if row and row[0]:
+                        tempo_pre = row[0]
+                tempo_total = tempo_pre + tempo_jogo + tempo_pos
+
                 c.execute('''
                     INSERT INTO pos_questionarios
                     (questionario_id, session_id, timestamp,
@@ -708,8 +722,8 @@ class GameHandler(BaseHTTPRequestHandler):
                      godspeed_pos_11, godspeed_pos_12, godspeed_pos_13, godspeed_pos_14, godspeed_pos_15,
                      godspeed_pos_16, godspeed_pos_17, godspeed_pos_18, godspeed_pos_19, godspeed_pos_20,
                      godspeed_pos_21, godspeed_pos_22, godspeed_pos_23, godspeed_pos_24,
-                     tempo_pos_segundos)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                     tempo_pos_segundos, tempo_jogo_segundos, tempo_total_segundos)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ''', (
                     qid, sid, datetime.datetime.now(),
                     body.get('A1', 0), body.get('A2', 0), body.get('A3', 0), body.get('A4', 0), body.get('A5', 0),
@@ -723,7 +737,7 @@ class GameHandler(BaseHTTPRequestHandler):
                     body.get('godspeed_pos_16', 0), body.get('godspeed_pos_17', 0), body.get('godspeed_pos_18', 0),
                     body.get('godspeed_pos_19', 0), body.get('godspeed_pos_20', 0), body.get('godspeed_pos_21', 0),
                     body.get('godspeed_pos_22', 0), body.get('godspeed_pos_23', 0), body.get('godspeed_pos_24', 0),
-                    body.get('tempo_pos_segundos', None)
+                    tempo_pos, tempo_jogo, tempo_total
                 ))
                 # Atualizar status do pre
                 if qid:
