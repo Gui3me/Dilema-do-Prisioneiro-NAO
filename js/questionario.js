@@ -7,7 +7,7 @@
   var currentSection = 1;
   var TOTAL_SECTIONS = 5;
   var participantId = null;
-  var _preStartTime = null;
+  var _preStartTime = Date.now();
 
   var progressLabel = document.getElementById('progress-label');
   var progressFrac  = document.getElementById('progress-frac');
@@ -42,7 +42,6 @@
           if(validateSection(idx)) {
             var val = document.getElementById('val-'+idx);
             if(val) val.style.display = 'none';
-            if(idx === 1 && !_preStartTime) _preStartTime = Date.now();
             showSection(idx+1);
           } else {
             var val = document.getElementById('val-'+idx);
