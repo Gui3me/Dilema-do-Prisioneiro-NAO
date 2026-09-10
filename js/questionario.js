@@ -58,26 +58,7 @@
     }
   }
 
-  // Escala de botoes visuais 1-5 (horizontal)
-  function createScale(containerId, name) {
-    var cont = document.getElementById(containerId);
-    if(!cont) return;
-    var html = '';
-    for(var i=1; i<=5; i++){
-      html += '<button type="button" class="scale-btn" data-name="' + name + '" data-value="' + i + '">' + i + '</button>';
-    }
-    cont.innerHTML = html;
-    cont.querySelectorAll('.scale-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var n = btn.getAttribute('data-name');
-        cont.querySelectorAll('.scale-btn[data-name="' + n + '"]').forEach(function(b){ b.classList.remove('selected'); });
-        btn.classList.add('selected');
-      });
-    });
-  }
-  createScale('scale-jogos', 'freq_jogos');
-  createScale('scale-robos', 'contato_robos');
-  createScale('scale-dilema', 'conhecimento_dilema');
+  // Removed scale functions
 
   // GodSpeed table pre
   var gsPairs = [
@@ -134,10 +115,6 @@
     });
   }
 
-  function getScaleValue(name) {
-    var btn = document.querySelector('.scale-btn[data-name="' + name + '"].selected');
-    return btn ? parseInt(btn.getAttribute('data-value'), 10) : null;
-  }
 
   function validateSection(num) {
     if(num === 1) {
@@ -162,9 +139,9 @@
       return true;
     }
     if(num === 3) {
-      if(getScaleValue('freq_jogos') === null ||
-         getScaleValue('contato_robos') === null ||
-         getScaleValue('conhecimento_dilema') === null) return false;
+      if(!document.querySelector('input[name="freq_jogos"]:checked') ||
+         !document.querySelector('input[name="contato_robos"]:checked') ||
+         !document.querySelector('input[name="conhecimento_dilema"]:checked')) return false;
       return true;
     }
     if(num === 4) {
@@ -191,9 +168,9 @@
         genero: document.querySelector('input[name="genero"]:checked').value,
         idade: document.querySelector('input[name="idade"]:checked').value,
         escolaridade: document.querySelector('input[name="escolaridade"]:checked').value,
-        freq_jogos: getScaleValue('freq_jogos'),
-        contato_robos: getScaleValue('contato_robos'),
-        conhecimento_dilema: getScaleValue('conhecimento_dilema')
+        freq_jogos: parseInt(document.querySelector('input[name="freq_jogos"]:checked').value, 10),
+        contato_robos: parseInt(document.querySelector('input[name="contato_robos"]:checked').value, 10),
+        conhecimento_dilema: parseInt(document.querySelector('input[name="conhecimento_dilema"]:checked').value, 10)
       };
       for(var i=1; i<=24; i++) payload['godspeed_'+i] = parseInt(document.querySelector('input[name="gs_pre_'+i+'"]:checked').value, 10);
 
