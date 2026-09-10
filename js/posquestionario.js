@@ -244,7 +244,7 @@
         var n = gsPosTotal;
         var html = '<tr><td class=th-left><div class=gs-label>' + p[0] + '</div></td>';
         [1,2,3,4,5].forEach(function(val){
-          html += '<td><label class=gs-opt><input type=radio name=gs_pos_' + n + ' value=' + val + '><div class=gs-bubble></div></label></td>';
+          html += '<td><label class=gs-opt><input type=radio name=gs_pos_' + n + ' value=' + val + '><div class=gs-bubble>' + val + '</div></label></td>';
         });
         html += '<td class=th-right><div class="gs-label right">' + p[1] + '</div></td></tr>';
         gsPosTbody.innerHTML += html;

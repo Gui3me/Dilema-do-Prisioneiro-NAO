@@ -105,8 +105,8 @@
       gsTbody.innerHTML += '<tr><td colspan="7" style="font-weight:700; background:var(--gold-soft); padding:8px 12px; text-align:center;">' + cat.category + '</td></tr>';
       cat.items.forEach(function(p){
         var html = '<tr><td class="th-left"><div class="gs-label">' + p[0] + '</div></td>';
-        ['A','2','3','4','E'].forEach(function(val, j){
-          html += '<td><label class="gs-opt"><input type="radio" name="gs_pre_' + n + '" value="' + (j+1) + '"><div class="gs-bubble"></div></label></td>';
+        ['1','2','3','4','5'].forEach(function(val, j){
+          html += '<td><label class="gs-opt"><input type="radio" name="gs_pre_' + n + '" value="' + (j+1) + '"><div class="gs-bubble">' + (j+1) + '</div></label></td>';
         });
         html += '<td class="th-right"><div class="gs-label right">' + p[1] + '</div></td></tr>';
         gsTbody.innerHTML += html;
