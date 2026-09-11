@@ -327,6 +327,137 @@
     });
   }
 
+  /* ---------- Helper: formata segundos em MM:SS ---------- */
+  function secsToMMSS(secs) {
+    if (secs === null || secs === undefined || secs === '' || isNaN(Number(secs))) return '—';
+    var s = Math.round(Number(secs));
+    var m = Math.floor(s / 60);
+    var r = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  /* ---------- Botão de exportação CSV ---------- */
+  var btnExportCsv = document.getElementById('btn-export-csv');
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener('click', function () {
+      var storedIp = localStorage.getItem('nao_ip') || '10.43.151.105';
+      window.open('http://' + storedIp + ':5050/exportar/csv', '_blank');
+    });
+  }
+
+  /* ---------- Modal de detalhes de questionário ---------- */
+  var qDetalheOverlay = document.getElementById('q-detalhe-overlay');
+  var qDetalheContent = document.getElementById('q-detalhe-content');
+  var qDetalheClose   = document.getElementById('q-detalhe-close');
+
+  function openDetalheModal(qid) {
+    if (!qDetalheOverlay) return;
+    qDetalheOverlay.style.display = 'flex';
+    if (qDetalheContent) qDetalheContent.innerHTML = 'Carregando...';
+
+    fetch(NAO_API + '/questionario/detalhe/' + qid)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.erro) {
+          qDetalheContent.innerHTML = '<p style="color:var(--bad);">Erro: ' + data.erro + '</p>';
+          return;
+        }
+        var pre  = data.pre  || {};
+        var pos  = data.pos  || null;
+        var sess = data.sessao || null;
+        var personalidades = ['Amigável', 'Competitivo', 'Neutro', 'Melancólico'];
+
+        var html = '<div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:4px;">Questionário Q' + qid + '</div>';
+        html += '<h2 style="font-family:\'Fraunces\',serif;font-size:1.25rem;font-weight:600;margin:0 0 20px;">Detalhes do Participante</h2>';
+
+        // Dados do participante
+        html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">Perfil</h3>';
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Gênero</div><div style="font-weight:600;">' + (pre.genero || '—') + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Idade</div><div style="font-weight:600;">' + (pre.idade || '—') + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Escolaridade</div><div style="font-weight:600;">' + (pre.escolaridade || '—') + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Freq. jogos</div><div style="font-weight:600;">' + (pre.freq_jogos !== undefined ? pre.freq_jogos : '—') + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Contato robôs</div><div style="font-weight:600;">' + (pre.contato_robos !== undefined ? pre.contato_robos : '—') + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Conhec. dilema</div><div style="font-weight:600;">' + (pre.conhecimento_dilema !== undefined ? pre.conhecimento_dilema : '—') + '</div></div>';
+        html += '</div>';
+
+        // Tempos
+        html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">Tempos</h3>';
+        html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Pré</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(pre.tempo_pre_segundos) + '</div></div>';
+        var tempoJogo  = pos ? pos.tempo_jogo_segundos  : null;
+        var tempoPos   = pos ? pos.tempo_pos_segundos   : null;
+        var tempoTotal = pos ? pos.tempo_total_segundos  : null;
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Jogo</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoJogo) + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Pós</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoPos) + '</div></div>';
+        html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Total</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoTotal) + '</div></div>';
+        html += '</div>';
+
+        // GodSpeed Pré
+        html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">GodSpeed Pré (GS1–GS24)</h3>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">';
+        for (var i = 1; i <= 24; i++) {
+          var val = pre['godspeed_' + i];
+          html += '<div style="min-width:48px;text-align:center;background:var(--surface-soft);border-radius:6px;padding:6px 8px;">';
+          html += '<div style="font-size:.65rem;color:var(--ink-faint);">GS' + i + '</div>';
+          html += '<div style="font-weight:700;">' + (val !== null && val !== undefined ? val : '—') + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+
+        // Sessão
+        if (sess) {
+          html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">Sessão</h3>';
+          html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">';
+          html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Personalidade</div><div style="font-weight:600;">' + (personalidades[sess.personalidade] || sess.personalidade || '—') + '</div></div>';
+          html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Vencedor</div><div style="font-weight:600;">' + (sess.winner || '—') + '</div></div>';
+          html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Início</div><div style="font-weight:600;">' + (sess.start_time ? sess.start_time.split('.')[0] : '—') + '</div></div>';
+          html += '</div>';
+        }
+
+        // Pós-questionário
+        if (!pos) {
+          html += '<div style="background:var(--surface-soft);border-radius:8px;padding:16px;text-align:center;color:var(--ink-faint);font-size:.87rem;">Pós-questionário não respondido</div>';
+        } else {
+          html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">Pós-questionário — Escala Likert</h3>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">';
+          var likertCols = ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5'];
+          likertCols.forEach(function (col) {
+            html += '<div style="min-width:48px;text-align:center;background:var(--surface-soft);border-radius:6px;padding:6px 8px;">';
+            html += '<div style="font-size:.65rem;color:var(--ink-faint);">' + col + '</div>';
+            html += '<div style="font-weight:700;">' + (pos[col] !== null && pos[col] !== undefined ? pos[col] : '—') + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+
+          html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">GodSpeed Pós (GS1–GS24)</h3>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+          for (var j = 1; j <= 24; j++) {
+            var valPos = pos['godspeed_pos_' + j];
+            html += '<div style="min-width:48px;text-align:center;background:var(--surface-soft);border-radius:6px;padding:6px 8px;">';
+            html += '<div style="font-size:.65rem;color:var(--ink-faint);">GS' + j + '</div>';
+            html += '<div style="font-weight:700;">' + (valPos !== null && valPos !== undefined ? valPos : '—') + '</div>';
+            html += '</div>';
+          }
+          html += '</div>';
+        }
+
+        if (qDetalheContent) qDetalheContent.innerHTML = html;
+      })
+      .catch(function (err) {
+        if (qDetalheContent) qDetalheContent.innerHTML = '<p style="color:var(--bad);">Erro ao carregar detalhes.</p>';
+      });
+  }
+
+  function closeDetalheModal() {
+    if (qDetalheOverlay) qDetalheOverlay.style.display = 'none';
+  }
+
+  if (qDetalheClose)   qDetalheClose.addEventListener('click', closeDetalheModal);
+  if (qDetalheOverlay) qDetalheOverlay.addEventListener('click', function (e) {
+    if (e.target === qDetalheOverlay) closeDetalheModal();
+  });
+
   /* ---------- Questionnaire Stats Tab ---------- */
   function fetchQStats(){
     fetch(NAO_API + '/questionario/stats')
@@ -359,6 +490,16 @@
         if(elIdsDes)    elIdsDes.textContent    = desistentesTotal > 0 ? 'Q' + desistentesIds.join(', Q') : '\u2014';
         if(elTotalNP)   elTotalNP.textContent   = naoPartTotal;
         if(elIdsNP)     elIdsNP.textContent     = naoPartTotal > 0 ? 'Sess. ' + naoPartSids.join(', ') : '\u2014';
+
+        // Médias de tempo
+        var elMediaPre   = document.getElementById('qs-media-pre');
+        var elMediaJogo  = document.getElementById('qs-media-jogo');
+        var elMediaPos   = document.getElementById('qs-media-pos');
+        var elMediaTotal = document.getElementById('qs-media-total');
+        if (elMediaPre)   elMediaPre.textContent   = data.media_tempo_pre   !== null && data.media_tempo_pre   !== undefined ? secsToMMSS(data.media_tempo_pre)   : '\u2014';
+        if (elMediaJogo)  elMediaJogo.textContent  = data.media_tempo_jogo  !== null && data.media_tempo_jogo  !== undefined ? secsToMMSS(data.media_tempo_jogo)  : '\u2014';
+        if (elMediaPos)   elMediaPos.textContent   = data.media_tempo_pos   !== null && data.media_tempo_pos   !== undefined ? secsToMMSS(data.media_tempo_pos)   : '\u2014';
+        if (elMediaTotal) elMediaTotal.textContent = data.media_tempo_total !== null && data.media_tempo_total !== undefined ? secsToMMSS(data.media_tempo_total) : '\u2014';
       })
       .catch(function(){});
 
@@ -368,7 +509,7 @@
         var tbody = document.getElementById('qs-lista-tbody');
         if(!tbody) return;
         if(!data.questionarios || data.questionarios.length === 0){
-          tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nenhum question\u00e1rio registrado.</td></tr>';
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum question\u00e1rio registrado.</td></tr>';
           return;
         }
         tbody.innerHTML = '';
@@ -386,8 +527,17 @@
             '<td class="cell-id">Q' + q.id + '</td>' +
             '<td class="cell-muted">' + (q.timestamp ? q.timestamp.split('.')[0] : '\u2014') + '</td>' +
             '<td>' + statusBadge + '</td>' +
-            '<td>' + (q.session_id ? ('#' + q.session_id) : '\u2014') + '</td>';
+            '<td>' + (q.session_id ? ('#' + q.session_id) : '\u2014') + '</td>' +
+            '<td><button class="btn-view-q" data-qid="' + q.id + '" style="font-size:.78rem;padding:4px 10px;border-radius:6px;background:var(--surface-soft);border:1px solid var(--border);cursor:pointer;color:var(--ink);">Ver</button></td>';
           tbody.appendChild(tr);
+        });
+
+        // Bindar botoes de detalhe
+        Array.prototype.slice.call(document.querySelectorAll('.btn-view-q')).forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var qid = this.getAttribute('data-qid');
+            openDetalheModal(qid);
+          });
         });
       })
       .catch(function(){});

@@ -15,18 +15,22 @@ Endpoints originais:
 Novos endpoints para questionarios:
   POST /questionario/pre      -> salva pre-questionario, retorna {"questionario_id": N}
   POST /questionario/pos      -> salva pos-questionario vinculado a uma sessao
-  GET  /questionario/stats    -> estatisticas de pre/pos questionarios
+  GET  /questionario/stats    -> estatisticas de pre/pos questionarios (inclui medias de tempo)
   POST /questionario/desistir -> marca participante como desistente
   POST /questionario/nao-participante -> registra nao-participante (sem questionario)
   GET  /questionario/lista    -> lista todos os questionarios com status
   POST /questionario/liberar-jogo -> pesquisador libera o jogo apos confirmacao do questionario
   GET  /questionario/aguardando -> retorna o questionario_id aguardando liberacao de jogo
+  GET  /questionario/detalhe/<id> -> retorna todos os dados de um questionario (pre+pos+sessao)
+  GET  /exportar/csv  -> gera planilha CSV completa com todos os dados do experimento
 """
 import json
 import threading
 import time
 import sqlite3
 import datetime
+import csv
+import io
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from naoqi import ALProxy
 
@@ -524,12 +528,34 @@ class GameHandler(BaseHTTPRequestHandler):
                 total_nao_part = c.fetchone()[0] or 0
                 c.execute('SELECT session_id FROM nao_participantes ORDER BY session_id')
                 ids_nao_part = [r[0] for r in c.fetchall()]
+                # Medias de tempo (apenas participantes completos, com pos-questionario)
+                c.execute('''
+                    SELECT AVG(pq.tempo_pre_segundos),
+                           AVG(pos.tempo_jogo_segundos),
+                           AVG(pos.tempo_pos_segundos),
+                           AVG(pos.tempo_total_segundos)
+                    FROM pre_questionarios pq
+                    JOIN pos_questionarios pos ON pos.questionario_id = pq.id
+                    WHERE pq.status = 'completo'
+                ''')
+                row_avg = c.fetchone()
+                def _fmt_avg(v):
+                    if v is None: return None
+                    return round(v, 1)
+                media_pre  = _fmt_avg(row_avg[0]) if row_avg else None
+                media_jogo = _fmt_avg(row_avg[1]) if row_avg else None
+                media_pos  = _fmt_avg(row_avg[2]) if row_avg else None
+                media_total= _fmt_avg(row_avg[3]) if row_avg else None
                 conn.close()
                 _send_json(self, {
                     "pre": {"total": total_pre, "ids": ids_pre},
                     "pos": {"total": total_pos, "ids": ids_pos},
                     "desistentes": {"total": total_desistiu, "ids": ids_desistiu},
-                    "nao_participantes": {"total": total_nao_part, "session_ids": ids_nao_part}
+                    "nao_participantes": {"total": total_nao_part, "session_ids": ids_nao_part},
+                    "media_tempo_pre":   media_pre,
+                    "media_tempo_jogo":  media_jogo,
+                    "media_tempo_pos":   media_pos,
+                    "media_tempo_total": media_total
                 })
             except Exception as e:
                 _send_json(self, {"erro": str(e)}, 500)
@@ -550,6 +576,202 @@ class GameHandler(BaseHTTPRequestHandler):
         elif self.path == '/questionario/aguardando':
             with _lock_lib:
                 _send_json(self, dict(_jogo_liberado))
+
+        elif self.path.startswith('/questionario/detalhe/'):
+            # Retorna todos os dados de um questionario especifico (pre + pos + sessao)
+            try:
+                qid = int(self.path.split('/')[-1])
+                conn = sqlite3.connect('dados_experimento_quest.db')
+                c = conn.cursor()
+                c.execute('''
+                    SELECT id, timestamp, status, session_id, genero, idade, escolaridade,
+                           freq_jogos, contato_robos, conhecimento_dilema,
+                           godspeed_1, godspeed_2, godspeed_3, godspeed_4, godspeed_5,
+                           godspeed_6, godspeed_7, godspeed_8, godspeed_9, godspeed_10,
+                           godspeed_11, godspeed_12, godspeed_13, godspeed_14, godspeed_15,
+                           godspeed_16, godspeed_17, godspeed_18, godspeed_19, godspeed_20,
+                           godspeed_21, godspeed_22, godspeed_23, godspeed_24,
+                           tempo_pre_segundos
+                    FROM pre_questionarios WHERE id=?
+                ''', (qid,))
+                row_pre = c.fetchone()
+                if not row_pre:
+                    conn.close()
+                    _send_json(self, {"erro": "questionario nao encontrado"}, 404)
+                    return
+                pre_keys = ['id','timestamp','status','session_id','genero','idade','escolaridade',
+                            'freq_jogos','contato_robos','conhecimento_dilema',
+                            'godspeed_1','godspeed_2','godspeed_3','godspeed_4','godspeed_5',
+                            'godspeed_6','godspeed_7','godspeed_8','godspeed_9','godspeed_10',
+                            'godspeed_11','godspeed_12','godspeed_13','godspeed_14','godspeed_15',
+                            'godspeed_16','godspeed_17','godspeed_18','godspeed_19','godspeed_20',
+                            'godspeed_21','godspeed_22','godspeed_23','godspeed_24',
+                            'tempo_pre_segundos']
+                pre_data = dict(zip(pre_keys, row_pre))
+                # Pos-questionario
+                c.execute('''
+                    SELECT A1,A2,A3,A4,A5, B1,B2,B3, C1,C2,C3,C4,C5,
+                           godspeed_pos_1, godspeed_pos_2, godspeed_pos_3, godspeed_pos_4, godspeed_pos_5,
+                           godspeed_pos_6, godspeed_pos_7, godspeed_pos_8, godspeed_pos_9, godspeed_pos_10,
+                           godspeed_pos_11, godspeed_pos_12, godspeed_pos_13, godspeed_pos_14, godspeed_pos_15,
+                           godspeed_pos_16, godspeed_pos_17, godspeed_pos_18, godspeed_pos_19, godspeed_pos_20,
+                           godspeed_pos_21, godspeed_pos_22, godspeed_pos_23, godspeed_pos_24,
+                           tempo_pos_segundos, tempo_jogo_segundos, tempo_total_segundos
+                    FROM pos_questionarios WHERE questionario_id=?
+                ''', (qid,))
+                row_pos = c.fetchone()
+                pos_data = None
+                if row_pos:
+                    pos_keys = ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5',
+                                'godspeed_pos_1','godspeed_pos_2','godspeed_pos_3','godspeed_pos_4','godspeed_pos_5',
+                                'godspeed_pos_6','godspeed_pos_7','godspeed_pos_8','godspeed_pos_9','godspeed_pos_10',
+                                'godspeed_pos_11','godspeed_pos_12','godspeed_pos_13','godspeed_pos_14','godspeed_pos_15',
+                                'godspeed_pos_16','godspeed_pos_17','godspeed_pos_18','godspeed_pos_19','godspeed_pos_20',
+                                'godspeed_pos_21','godspeed_pos_22','godspeed_pos_23','godspeed_pos_24',
+                                'tempo_pos_segundos','tempo_jogo_segundos','tempo_total_segundos']
+                    pos_data = dict(zip(pos_keys, row_pos))
+                # Sessao vinculada
+                sessao_data = None
+                sid = pre_data.get('session_id')
+                if sid:
+                    c.execute('SELECT id, start_time, personalidade, winner, end_time FROM sessoes WHERE id=?', (sid,))
+                    row_sess = c.fetchone()
+                    if row_sess:
+                        sessao_data = {
+                            'id': row_sess[0], 'start_time': row_sess[1],
+                            'personalidade': row_sess[2], 'winner': row_sess[3],
+                            'end_time': row_sess[4]
+                        }
+                conn.close()
+                _send_json(self, {
+                    "pre": pre_data,
+                    "pos": pos_data,
+                    "sessao": sessao_data
+                })
+            except Exception as e:
+                _send_json(self, {"erro": str(e)}, 500)
+
+        elif self.path == '/exportar/csv':
+            # Gera planilha CSV com todos os dados do experimento (pre + pos + sessao)
+            try:
+                conn = sqlite3.connect('dados_experimento_quest.db')
+                c = conn.cursor()
+                c.execute('''
+                    SELECT
+                        pq.id, pq.session_id, pq.timestamp, pq.status,
+                        pq.genero, pq.idade, pq.escolaridade,
+                        pq.freq_jogos, pq.contato_robos, pq.conhecimento_dilema,
+                        pq.godspeed_1, pq.godspeed_2, pq.godspeed_3, pq.godspeed_4, pq.godspeed_5,
+                        pq.godspeed_6, pq.godspeed_7, pq.godspeed_8, pq.godspeed_9, pq.godspeed_10,
+                        pq.godspeed_11, pq.godspeed_12, pq.godspeed_13, pq.godspeed_14, pq.godspeed_15,
+                        pq.godspeed_16, pq.godspeed_17, pq.godspeed_18, pq.godspeed_19, pq.godspeed_20,
+                        pq.godspeed_21, pq.godspeed_22, pq.godspeed_23, pq.godspeed_24,
+                        pq.tempo_pre_segundos,
+                        s.personalidade, s.winner, s.start_time, s.end_time,
+                        pos.A1, pos.A2, pos.A3, pos.A4, pos.A5,
+                        pos.B1, pos.B2, pos.B3,
+                        pos.C1, pos.C2, pos.C3, pos.C4, pos.C5,
+                        pos.godspeed_pos_1, pos.godspeed_pos_2, pos.godspeed_pos_3, pos.godspeed_pos_4, pos.godspeed_pos_5,
+                        pos.godspeed_pos_6, pos.godspeed_pos_7, pos.godspeed_pos_8, pos.godspeed_pos_9, pos.godspeed_pos_10,
+                        pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
+                        pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
+                        pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
+                        pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
+                    FROM pre_questionarios pq
+                    LEFT JOIN sessoes s ON s.id = pq.session_id
+                    LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
+                    ORDER BY pq.id
+                ''')
+                rows = c.fetchall()
+                conn.close()
+
+                # Cabecalho do CSV
+                header = [
+                    'questionario_id', 'session_id', 'timestamp_pre', 'status',
+                    'genero', 'idade', 'escolaridade', 'freq_jogos', 'contato_robos', 'conhecimento_dilema'
+                ]
+                for i in range(1, 25):
+                    header.append('godspeed_%d' % i)
+                header.append('tempo_pre_segundos')
+                header += ['personalidade', 'winner', 'start_time', 'end_time']
+                header += ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5']
+                for i in range(1, 25):
+                    header.append('godspeed_pos_%d' % i)
+                header += ['tempo_jogo_segundos', 'tempo_pos_segundos', 'tempo_total_segundos']
+
+                # Colunas numericas para calculo de medias (apenas participantes completos)
+                # Indice das colunas numericas de interesse no header
+                numeric_col_names = (
+                    ['tempo_pre_segundos'] +
+                    ['godspeed_%d' % i for i in range(1, 25)] +
+                    ['A1','A2','A3','A4','A5','B1','B2','B3','C1','C2','C3','C4','C5'] +
+                    ['godspeed_pos_%d' % i for i in range(1, 25)] +
+                    ['tempo_jogo_segundos', 'tempo_pos_segundos', 'tempo_total_segundos']
+                )
+                numeric_indices = [header.index(col) for col in numeric_col_names]
+
+                # Acumular somas para calcular medias (somente linhas completas)
+                sums = [0.0] * len(numeric_indices)
+                counts = [0] * len(numeric_indices)
+
+                # Gerar CSV em memoria com BOM UTF-8 para Excel
+                buf = io.BytesIO()
+                buf.write(b'\xef\xbb\xbf')  # BOM UTF-8
+                writer = csv.writer(buf)
+                writer.writerow(header)
+
+                for row in rows:
+                    row_list = list(row)
+                    # Encode strings para UTF-8
+                    encoded = []
+                    for val in row_list:
+                        if isinstance(val, unicode):
+                            encoded.append(val.encode('utf-8'))
+                        elif val is None:
+                            encoded.append('')
+                        else:
+                            encoded.append(val)
+                    writer.writerow(encoded)
+                    # Acumular para medias se status == 'completo'
+                    status_val = row_list[3]
+                    if status_val == 'completo':
+                        for k, idx in enumerate(numeric_indices):
+                            v = row_list[idx]
+                            if v is not None:
+                                try:
+                                    sums[k] += float(v)
+                                    counts[k] += 1
+                                except (TypeError, ValueError):
+                                    pass
+
+                # Linha de medias
+                media_row = ['MEDIA'] + [''] * (len(header) - 1)
+                for k, idx in enumerate(numeric_indices):
+                    if counts[k] > 0:
+                        avg_val = sums[k] / counts[k]
+                        media_row[idx] = round(avg_val, 2)
+                    else:
+                        media_row[idx] = ''
+                encoded_media = []
+                for val in media_row:
+                    if isinstance(val, unicode):
+                        encoded_media.append(val.encode('utf-8'))
+                    elif val is None:
+                        encoded_media.append('')
+                    else:
+                        encoded_media.append(val)
+                writer.writerow(encoded_media)
+
+                csv_bytes = buf.getvalue()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/csv; charset=utf-8')
+                self.send_header('Content-Disposition', 'attachment; filename=dados_experimento.csv')
+                self.send_header('Content-Length', str(len(csv_bytes)))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(csv_bytes)
+            except Exception as e:
+                _send_json(self, {"erro": str(e)}, 500)
 
         else:
             self.send_error(404)
