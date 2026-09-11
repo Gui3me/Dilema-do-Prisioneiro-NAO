@@ -544,11 +544,12 @@ class GameHandler(BaseHTTPRequestHandler):
                 # Medias de tempo (apenas participantes completos, com pos-questionario)
                 c.execute('''
                     SELECT AVG(pq.tempo_pre_segundos),
-                           AVG(pos.tempo_jogo_segundos),
+                           AVG(CASE WHEN pos.tempo_jogo_segundos > 0 THEN pos.tempo_jogo_segundos ELSE (julianday(s.end_time) - julianday(s.start_time)) * 86400 END),
                            AVG(pos.tempo_pos_segundos),
-                           AVG(pos.tempo_total_segundos)
+                           AVG(pq.tempo_pre_segundos + pos.tempo_pos_segundos + CASE WHEN pos.tempo_jogo_segundos > 0 THEN pos.tempo_jogo_segundos ELSE (julianday(s.end_time) - julianday(s.start_time)) * 86400 END)
                     FROM pre_questionarios pq
                     JOIN pos_questionarios pos ON pos.questionario_id = pq.id
+                    LEFT JOIN sessoes s ON s.id = pq.session_id
                     WHERE pq.status = 'completo'
                 ''')
                 row_avg = c.fetchone()
@@ -660,6 +661,20 @@ class GameHandler(BaseHTTPRequestHandler):
                             'end_time': _s(row_sess[4])
                         }
                 conn.close()
+                if pos_data and sessao_data and (pos_data.get('tempo_jogo_segundos') in (0, None, '0', 'None')):
+                    try:
+                        import re
+                        s1 = re.sub(r'\.\d+', '', str(sessao_data.get('start_time', '')))
+                        s2 = re.sub(r'\.\d+', '', str(sessao_data.get('end_time', '')))
+                        fmt = "%Y-%m-%d %H:%M:%S"
+                        t1 = datetime.datetime.strptime(s1, fmt)
+                        t2 = datetime.datetime.strptime(s2, fmt)
+                        tj = int((t2 - t1).total_seconds())
+                        pos_data['tempo_jogo_segundos'] = tj
+                        if pos_data.get('tempo_pos_segundos') is not None and pre_data.get('tempo_pre_segundos') is not None:
+                            pos_data['tempo_total_segundos'] = int(pos_data['tempo_pos_segundos']) + int(pre_data['tempo_pre_segundos']) + tj
+                    except Exception:
+                        pass
                 _send_json(self, {
                     "pre": pre_data,
                     "pos": pos_data,
@@ -693,7 +708,9 @@ class GameHandler(BaseHTTPRequestHandler):
                         pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
                         pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
                         pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
-                        pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
+                        CASE WHEN pos.tempo_jogo_segundos > 0 THEN pos.tempo_jogo_segundos ELSE CAST((julianday(s.end_time) - julianday(s.start_time)) * 86400 AS INTEGER) END as tempo_jogo_segundos,
+                        pos.tempo_pos_segundos,
+                        pq.tempo_pre_segundos + pos.tempo_pos_segundos + CASE WHEN pos.tempo_jogo_segundos > 0 THEN pos.tempo_jogo_segundos ELSE CAST((julianday(s.end_time) - julianday(s.start_time)) * 86400 AS INTEGER) END as tempo_total_segundos
                     FROM pre_questionarios pq
                     LEFT JOIN sessoes s ON s.id = pq.session_id
                     LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
