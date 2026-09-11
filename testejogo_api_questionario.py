@@ -669,126 +669,154 @@ class GameHandler(BaseHTTPRequestHandler):
                 _send_json(self, {"erro": str(e)}, 500)
 
         elif self.path == '/exportar/csv':
-            # Gera planilha CSV com todos os dados do experimento (pre + pos + sessao)
-            try:
-                conn = sqlite3.connect('dados_experimento_quest.db')
-                c = conn.cursor()
-                c.execute('''
-                    SELECT
-                        pq.id, pq.session_id, pq.timestamp, pq.status,
-                        pq.genero, pq.idade, pq.escolaridade,
-                        pq.freq_jogos, pq.contato_robos, pq.conhecimento_dilema,
-                        pq.godspeed_1, pq.godspeed_2, pq.godspeed_3, pq.godspeed_4, pq.godspeed_5,
-                        pq.godspeed_6, pq.godspeed_7, pq.godspeed_8, pq.godspeed_9, pq.godspeed_10,
-                        pq.godspeed_11, pq.godspeed_12, pq.godspeed_13, pq.godspeed_14, pq.godspeed_15,
-                        pq.godspeed_16, pq.godspeed_17, pq.godspeed_18, pq.godspeed_19, pq.godspeed_20,
-                        pq.godspeed_21, pq.godspeed_22, pq.godspeed_23, pq.godspeed_24,
-                        pq.tempo_pre_segundos,
-                        s.personalidade, s.winner, s.start_time, s.end_time,
-                        pos.A1, pos.A2, pos.A3, pos.A4, pos.A5,
-                        pos.B1, pos.B2, pos.B3,
-                        pos.C1, pos.C2, pos.C3, pos.C4, pos.C5,
-                        pos.godspeed_pos_1, pos.godspeed_pos_2, pos.godspeed_pos_3, pos.godspeed_pos_4, pos.godspeed_pos_5,
-                        pos.godspeed_pos_6, pos.godspeed_pos_7, pos.godspeed_pos_8, pos.godspeed_pos_9, pos.godspeed_pos_10,
-                        pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
-                        pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
-                        pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
-                        pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
-                    FROM pre_questionarios pq
-                    LEFT JOIN sessoes s ON s.id = pq.session_id
-                    LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
-                    ORDER BY pq.id
-                ''')
-                rows = c.fetchall()
-                conn.close()
+        try:
+            import xml.sax.saxutils as saxutils
+            conn = sqlite3.connect('dados_experimento_quest.db') if 'elif self.path == '/exportar/csv':'.startswith('elif self') else get_db()
+            c = conn.cursor()
+            c.execute('''
+                SELECT
+                    pq.id, pq.session_id, pq.timestamp, pq.status,
+                    pq.genero, pq.idade, pq.escolaridade,
+                    pq.freq_jogos, pq.contato_robos, pq.conhecimento_dilema,
+                    pq.godspeed_1, pq.godspeed_2, pq.godspeed_3, pq.godspeed_4, pq.godspeed_5,
+                    pq.godspeed_6, pq.godspeed_7, pq.godspeed_8, pq.godspeed_9, pq.godspeed_10,
+                    pq.godspeed_11, pq.godspeed_12, pq.godspeed_13, pq.godspeed_14, pq.godspeed_15,
+                    pq.godspeed_16, pq.godspeed_17, pq.godspeed_18, pq.godspeed_19, pq.godspeed_20,
+                    pq.godspeed_21, pq.godspeed_22, pq.godspeed_23, pq.godspeed_24,
+                    pq.tempo_pre_segundos,
+                    s.personalidade, s.winner, s.start_time, s.end_time,
+                    pos.A1, pos.A2, pos.A3, pos.A4, pos.A5,
+                    pos.B1, pos.B2, pos.B3,
+                    pos.C1, pos.C2, pos.C3, pos.C4, pos.C5,
+                    pos.godspeed_pos_1, pos.godspeed_pos_2, pos.godspeed_pos_3, pos.godspeed_pos_4, pos.godspeed_pos_5,
+                    pos.godspeed_pos_6, pos.godspeed_pos_7, pos.godspeed_pos_8, pos.godspeed_pos_9, pos.godspeed_pos_10,
+                    pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
+                    pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
+                    pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
+                    pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
+                FROM pre_questionarios pq
+                LEFT JOIN sessoes s ON s.id = pq.session_id
+                LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
+                ORDER BY pq.id
+            ''')
+            rows = c.fetchall()
+            conn.close()
 
-                # Labels Godspeed para Excel
-                gs_labels = [
-                    "Antropomorfismo > Falso / Natural",
-                    "Antropomorfismo > Aspecto mecânico / Aspecto humano",
-                    "Antropomorfismo > Inconsciente / Consciente",
-                    "Antropomorfismo > Artificial / Realista",
-                    "Antropomorfismo > Move-se com rigidez / Move-se com fluidez",
-                    "Animacidade > Morto / Com vida",
-                    "Animacidade > Parado / Energético",
-                    "Animacidade > Mecânico / Orgânico",
-                    "Animacidade > Artificial / Realista",
-                    "Animacidade > Estático / Interativo",
-                    "Animacidade > Apático / Participativo",
-                    "Simpatia > Não gosto / Gosto",
-                    "Simpatia > Hostil / Amigável",
-                    "Simpatia > Antipático / Gentil",
-                    "Simpatia > Desagradável / Agradável",
-                    "Simpatia > Horrível / Simpático",
-                    "Inteligência > Incompetente / Competente",
-                    "Inteligência > Ignorante / Sabedor",
-                    "Inteligência > Irresponsável / Responsável",
-                    "Inteligência > Pouco inteligente / Inteligente",
-                    "Inteligência > Insensato / Sensato",
-                    "Segurança > Ansioso / Descontraído",
-                    "Segurança > Agitado / Calmo",
-                    "Segurança > Sereno / Surpreendido"
-                ]
+            gs_labels = [
+                "Antropomorfismo > Falso / Natural",
+                "Antropomorfismo > Aspecto mecanico / Aspecto humano",
+                "Antropomorfismo > Inconsciente / Consciente",
+                "Antropomorfismo > Artificial / Realista",
+                "Antropomorfismo > Rigidez / Fluidez",
+                "Animacidade > Morto / Com vida",
+                "Animacidade > Parado / Energetico",
+                "Animacidade > Mecanico / Organico",
+                "Animacidade > Artificial / Realista",
+                "Animacidade > Estatico / Interativo",
+                "Animacidade > Apatico / Participativo",
+                "Simpatia > Nao gosto / Gosto",
+                "Simpatia > Hostil / Amigavel",
+                "Simpatia > Antipatico / Gentil",
+                "Simpatia > Desagradavel / Agradavel",
+                "Simpatia > Horrivel / Simpatico",
+                "Inteligencia > Incompetente / Competente",
+                "Inteligencia > Ignorante / Sabedor",
+                "Inteligencia > Irresponsavel / Responsavel",
+                "Inteligencia > Pouco inteligente / Inteligente",
+                "Inteligencia > Insensato / Sensato",
+                "Seguranca > Ansioso / Descontraido",
+                "Seguranca > Agitado / Calmo",
+                "Seguranca > Sereno / Surpreendido"
+            ]
 
-                # Cabecalho do CSV
-                header = [
-                    'ID Questionário', 'ID Sessão', 'Data/Hora (Pré)', 'Status',
-                    'Gênero', 'Idade', 'Escolaridade', 'Frequência de Jogos', 'Contato com Robôs', 'Conhecimento do Dilema'
-                ]
-                
-                # Pre Godspeed
-                pre_gs_cols = ['[Pré] %s (GS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
-                header.extend(pre_gs_cols)
-                
-                header.append('[Pré] Tempo Resposta (seg)')
-                header += ['Personalidade do Robô', 'Vencedor do Jogo', 'Início do Jogo', 'Fim do Jogo']
-                header += ['[Pós] A1 (Muitos/Poucos motivos)', '[Pós] A2 (Difícil/Fácil entender)', '[Pós] A3 (Não sei/Sei o que esperava)', '[Pós] A4 (Surpreso/Nada surpreso)', '[Pós] A5 (Difícil/Fácil prever)', 
-                           '[Pós] B1 (Robô quis me prejudicar)', '[Pós] B2 (Robô quis me ajudar)', '[Pós] B3 (Robô foi neutro)', 
-                           '[Pós] C1 (Robô cooperou/Enganou)', '[Pós] C2 (Robô foi justo/Injusto)', '[Pós] C3 (Robô foi previsível/Imprevisível)', '[Pós] C4 (Robô foi confiável/Não confiável)', '[Pós] C5 (Robô foi amigável/Hostil)']
-                
-                # Pos Godspeed
-                pos_gs_cols = ['[Pós] %s (GS_POS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
-                header.extend(pos_gs_cols)
-                
-                header += ['[Pós] Tempo de Jogo (seg)', '[Pós] Tempo Resposta (seg)', 'Tempo Total Experimento (seg)']
+            xml = []
+            xml.append('<?xml version="1.0" encoding="utf-8"?>')
+            xml.append('<?mso-application progid="Excel.Sheet"?>')
+            xml.append('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">')
+            
+            xml.append('<Styles>')
+            xml.append(' <Style ss:ID="HeaderPre"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#D9EAD3" ss:Pattern="Solid"/></Style>')
+            xml.append(' <Style ss:ID="HeaderJogo"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style>')
+            xml.append(' <Style ss:ID="HeaderPos"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#F4CCCC" ss:Pattern="Solid"/></Style>')
+            xml.append('</Styles>')
 
-                # Colunas numericas para calculo de medias (apenas participantes completos)
-                numeric_col_names = (
-                    ['[Pré] Tempo Resposta (seg)'] +
-                    pre_gs_cols +
-                    ['[Pós] A1 (Muitos/Poucos motivos)', '[Pós] A2 (Difícil/Fácil entender)', '[Pós] A3 (Não sei/Sei o que esperava)', '[Pós] A4 (Surpreso/Nada surpreso)', '[Pós] A5 (Difícil/Fácil prever)', 
-                     '[Pós] B1 (Robô quis me prejudicar)', '[Pós] B2 (Robô quis me ajudar)', '[Pós] B3 (Robô foi neutro)', 
-                     '[Pós] C1 (Robô cooperou/Enganou)', '[Pós] C2 (Robô foi justo/Injusto)', '[Pós] C3 (Robô foi previsível/Imprevisível)', '[Pós] C4 (Robô foi confiável/Não confiável)', '[Pós] C5 (Robô foi amigável/Hostil)'] +
-                    pos_gs_cols +
-                    ['[Pós] Tempo de Jogo (seg)', '[Pós] Tempo Resposta (seg)', 'Tempo Total Experimento (seg)']
-                )
-                numeric_indices = [header.index(col) for col in numeric_col_names]
+            def _s2(val):
+                if val is None: return u""
+                try:
+                    if isinstance(val, unicode): return val
+                except NameError: pass
+                try:
+                    if isinstance(val, bytes): return val.decode('utf-8')
+                except Exception: pass
+                return str(val)
 
-                # Acumular somas para calcular medias (somente linhas completas)
-                sums = [0.0] * len(numeric_indices)
-                counts = [0] * len(numeric_indices)
+            def format_row(row_data):
+                r = ['   <Row>']
+                for val, style in row_data:
+                    s_val = _s2(val)
+                    t = "Number" if isinstance(val, (int, float)) else "String"
+                    cell = '    <Cell'
+                    if style: cell += ' ss:StyleID="{}"'.format(style)
+                    cell += '><Data ss:Type="{}">{}</Data></Cell>'.format(t, saxutils.escape(s_val).encode('utf-8').decode('utf-8'))
+                    r.append(cell)
+                r.append('   </Row>')
+                return "\n".join(r)
 
-                # Gerar CSV em memoria com BOM UTF-8 para Excel
-                buf = io.BytesIO()
-                buf.write(b'\xef\xbb\xbf')  # BOM UTF-8
-                
-                # Usa ponto-e-virgula (;) para o Excel em PT-BR abrir em colunas automaticamente
-                writer = csv.writer(buf, delimiter=';')
-                writer.writerow(header)
+            # 1. PLANILHA PRÉ
+            xml.append(' <Worksheet ss:Name="Pre-Questionario">')
+            xml.append('  <Table>')
+            header_pre = ['ID Questionario', 'ID Sessao', 'Data/Hora (Pre)', 'Status', 'Genero', 'Idade', 'Escolaridade', 'Freq Jogos', 'Contato Robos', 'Conhec Dilema']
+            header_pre.extend(['{} (GS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
+            header_pre.append('Tempo Resposta (seg)')
+            xml.append(format_row([(h, "HeaderPre") for h in header_pre]))
+            for row in rows:
+                row_pre = list(row[0:35])
+                xml.append(format_row([(v, None) for v in row_pre]))
+            xml.append('  </Table>')
+            xml.append(' </Worksheet>')
 
-                for row in rows:
-                    row_list = list(row)
-                    # Normaliza para UTF-8 bytes (Python 2.7 csv.writer espera str/bytes)
-                    encoded = []
-                    for val in row_list:
-                        if val is None:
-                            encoded.append('')
-                        elif isinstance(val, unicode):
-                            encoded.append(val.encode('utf-8'))
-                        elif isinstance(val, str):
-                            # Ja sao bytes UTF-8 do SQLite, passa direto
-                            encoded.append(val)
-                        else:
+            # 2. PLANILHA JOGO
+            xml.append(' <Worksheet ss:Name="Sessao de Jogo">')
+            xml.append('  <Table>')
+            header_jogo = ['ID Sessao', 'ID Questionario', 'Personalidade', 'Vencedor', 'Inicio', 'Fim']
+            xml.append(format_row([(h, "HeaderJogo") for h in header_jogo]))
+            for row in rows:
+                if row[1] is not None:
+                    row_jogo = [row[1], row[0], row[35], row[36], row[37], row[38]]
+                    xml.append(format_row([(v, None) for v in row_jogo]))
+            xml.append('  </Table>')
+            xml.append(' </Worksheet>')
+
+            # 3. PLANILHA PÓS
+            xml.append(' <Worksheet ss:Name="Pos-Questionario">')
+            xml.append('  <Table>')
+            header_pos = ['ID Questionario', 'ID Sessao']
+            header_pos += ['A1 (Muitos/Poucos motivos)', 'A2 (Dificil/Facil entender)', 'A3 (Nao sei/Sei o que esperava)', 'A4 (Surpreso/Nada surpreso)', 'A5 (Dificil/Facil prever)', 
+                           'B1 (Robo quis me prejudicar)', 'B2 (Robo quis me ajudar)', 'B3 (Robo foi neutro)', 
+                           'C1 (Robo cooperou/Enganou)', 'C2 (Robo foi justo/Injusto)', 'C3 (Robo previsivel/Imprevisivel)', 'C4 (Robo confiavel/Nao confiavel)', 'C5 (Robo amigavel/Hostil)']
+            header_pos.extend(['{} (GS_POS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
+            header_pos += ['Tempo Jogo (s)', 'Tempo Resposta (s)', 'Tempo Total Experimento (s)']
+            xml.append(format_row([(h, "HeaderPos") for h in header_pos]))
+            for row in rows:
+                if row[39] is not None:
+                    row_pos = [row[0], row[1]] + list(row[39:79])
+                    xml.append(format_row([(v, None) for v in row_pos]))
+            xml.append('  </Table>')
+            xml.append(' </Worksheet>')
+
+            xml.append('</Workbook>')
+            
+            xls_bytes = ("\n".join(xml)).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
+            self.send_header('Content-Disposition', 'attachment; filename="dados_experimento.xls"')
+            self.send_header('Content-Length', str(len(xls_bytes)))
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(xls_bytes)
+        except Exception as e:
+            _send_json(self, {"erro": str(e)}, 500)
+else:
                             encoded.append(val)
                     writer.writerow(encoded)
                     # Acumular para medias se status == 'completo'
