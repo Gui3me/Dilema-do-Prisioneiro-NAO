@@ -323,7 +323,9 @@
           body: JSON.stringify({questionario_id: questionarioId})
         }).catch(function(){});
         
-        history.back(); // Volta de verdade
+        // Limpa a tela de preenchimento e mostra a tela de desistência
+        localStorage.removeItem('questionario_id');
+        showSection('sec-declined');
       };
       
       btnRow.appendChild(btnFicar);
