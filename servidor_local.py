@@ -364,24 +364,26 @@ class Handler(BaseHTTPRequestHandler):
                 ]
 
                 header = [
-                    'questionario_id', 'session_id', 'timestamp_pre', 'status',
-                    'genero', 'idade', 'escolaridade', 'freq_jogos', 'contato_robos', 'conhecimento_dilema'
+                    'ID Questionário', 'ID Sessão', 'Data/Hora (Pré)', 'Status',
+                    'Gênero', 'Idade', 'Escolaridade', 'Frequência de Jogos', 'Contato com Robôs', 'Conhecimento do Dilema'
                 ]
                 
                 pre_gs_cols = ['[Pré] %s (GS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
                 header.extend(pre_gs_cols)
                 
-                header.append('tempo_pre_segundos')
-                header += ['personalidade', 'winner', 'start_time', 'end_time']
-                header += ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
+                header.append('[Pré] Tempo Resposta (seg)')
+                header += ['Personalidade do Robô', 'Vencedor do Jogo', 'Início do Jogo', 'Fim do Jogo']
+                header += ['[Pós] A1 (Muitos/Poucos motivos)', '[Pós] A2 (Difícil/Fácil entender)', '[Pós] A3 (Não sei/Sei o que esperava)', '[Pós] A4 (Surpreso/Nada surpreso)', '[Pós] A5 (Difícil/Fácil prever)', 
+                           '[Pós] B1 (Robô quis me prejudicar)', '[Pós] B2 (Robô quis me ajudar)', '[Pós] B3 (Robô foi neutro)', 
+                           '[Pós] C1 (Robô cooperou/Enganou)', '[Pós] C2 (Robô foi justo/Injusto)', '[Pós] C3 (Robô foi previsível/Imprevisível)', '[Pós] C4 (Robô foi confiável/Não confiável)', '[Pós] C5 (Robô foi amigável/Hostil)']
                 
                 pos_gs_cols = ['[Pós] %s (GS_POS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
                 header.extend(pos_gs_cols)
                 
-                header += ['tempo_jogo_segundos', 'tempo_pos_segundos', 'tempo_total_segundos']
+                header += ['[Pós] Tempo de Jogo (seg)', '[Pós] Tempo Resposta (seg)', 'Tempo Total Experimento (seg)']
 
                 buf = io.StringIO()
-                writer = csv.writer(buf)
+                writer = csv.writer(buf, delimiter=';')
                 writer.writerow(header)
                 for row in rows:
                     writer.writerow(['' if v is None else v for v in row])
