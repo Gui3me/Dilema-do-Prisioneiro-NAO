@@ -182,14 +182,63 @@
   var btnDecline = document.getElementById('btn-decline-pos');
   if(btnDecline) {
     btnDecline.addEventListener('click', function(){
-      if(confirm('Tem certeza que n\u00e3o deseja responder o p\u00f3s-question\u00e1rio?')) {
+      var overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.background = 'rgba(0,0,0,0.5)';
+      overlay.style.backdropFilter = 'blur(4px)';
+      overlay.style.zIndex = '3000';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      
+      var modal = document.createElement('div');
+      modal.style.background = 'var(--surface)';
+      modal.style.padding = '24px';
+      modal.style.borderRadius = '12px';
+      modal.style.maxWidth = '400px';
+      modal.style.textAlign = 'center';
+      modal.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      
+      var text = document.createElement('p');
+      text.innerHTML = 'Tem certeza que não deseja responder o pós-questionário?';
+      text.style.marginBottom = '20px';
+      text.style.color = 'var(--ink)';
+      text.style.fontSize = '1.05rem';
+      
+      var btnRow = document.createElement('div');
+      btnRow.style.display = 'flex';
+      btnRow.style.justifyContent = 'center';
+      btnRow.style.gap = '12px';
+      
+      var btnVoltar = document.createElement('button');
+      btnVoltar.textContent = 'Voltar';
+      btnVoltar.className = 'btn btn-outline';
+      btnVoltar.onclick = function() {
+        document.body.removeChild(overlay);
+      };
+      
+      var btnConfirmar = document.createElement('button');
+      btnConfirmar.textContent = 'Sim, não quero responder';
+      btnConfirmar.className = 'btn btn-primary';
+      btnConfirmar.style.background = 'var(--bad)';
+      btnConfirmar.style.borderColor = 'var(--bad)';
+      btnConfirmar.onclick = function() {
+        document.body.removeChild(overlay);
         fetch(NAO_API + '/questionario/desistir', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({questionario_id: questionarioId})
         }).catch(function(){});
         sessionStorage.removeItem('pos_active_questionario_id');
         showSection('sec-declined');
-      }
+      };
+      
+      btnRow.appendChild(btnVoltar);
+      btnRow.appendChild(btnConfirmar);
+      modal.appendChild(text);
+      modal.appendChild(btnRow);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
     });
   }
 

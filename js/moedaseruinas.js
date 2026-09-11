@@ -459,6 +459,29 @@
       '</div>' +
       '<div class="cta-row"><button class="btn btn-primary" id="btn-restart">Chamar o pesquisador</button></div>';
 
+    // Animação dourada saindo do centro e expandindo
+    if (you > nao) {
+      if (!document.getElementById('win-aura-style')) {
+        var style = document.createElement('style');
+        style.id = 'win-aura-style';
+        style.innerHTML = 
+          '.win-aura-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }' +
+          '.win-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%;' +
+          ' background: radial-gradient(circle, rgba(255,230,120,0.5) 0%, rgba(200,160,80,0.25) 40%, transparent 80%);' +
+          ' animation: aura-expand 3.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; mix-blend-mode: screen; filter: blur(30px); }' +
+          '@keyframes aura-expand { 0% { width: 50px; height: 50px; opacity: 0.8; } 50% { width: 120vw; height: 120vw; opacity: 0.5; } 100% { width: 250vw; height: 250vw; opacity: 0; } }' +
+          '#screen-end .card { position: relative; z-index: 10; }';
+        document.head.appendChild(style);
+      }
+      var auraContainer = document.createElement('div');
+      auraContainer.className = 'win-aura-container';
+      var aura = document.createElement('div');
+      aura.className = 'win-aura';
+      auraContainer.appendChild(aura);
+      document.getElementById('screen-end').appendChild(auraContainer);
+      setTimeout(function() { if (auraContainer.parentNode) auraContainer.parentNode.removeChild(auraContainer); }, 4000);
+    }
+
     // Save game time to localStorage
     if(_jogoStartTime) {
       var tempoJogoSeg = Math.round((Date.now() - _jogoStartTime) / 1000);
