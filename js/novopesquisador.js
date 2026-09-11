@@ -276,12 +276,62 @@
                
                btnDesistir.onclick = function(e) {
                  e.stopPropagation(); // Evita clicar no botão de trás
-                 if(confirm('Você confirma que o participante não irá mais participar do estudo? Isso irá anular as respostas dele.')) {
+                 
+                 // Cria um modal customizado na tela
+                 var overlay = document.createElement('div');
+                 overlay.style.position = 'fixed';
+                 overlay.style.inset = '0';
+                 overlay.style.background = 'rgba(0,0,0,0.5)';
+                 overlay.style.backdropFilter = 'blur(4px)';
+                 overlay.style.zIndex = '3000';
+                 overlay.style.display = 'flex';
+                 overlay.style.alignItems = 'center';
+                 overlay.style.justifyContent = 'center';
+                 
+                 var modal = document.createElement('div');
+                 modal.style.background = 'var(--surface)';
+                 modal.style.padding = '24px';
+                 modal.style.borderRadius = '12px';
+                 modal.style.maxWidth = '400px';
+                 modal.style.textAlign = 'center';
+                 modal.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                 
+                 var text = document.createElement('p');
+                 text.textContent = 'Você confirma que o participante não irá mais participar do estudo? Isso irá anular as respostas dele.';
+                 text.style.marginBottom = '20px';
+                 text.style.color = 'var(--ink)';
+                 text.style.fontSize = '1rem';
+                 
+                 var btnRow = document.createElement('div');
+                 btnRow.style.display = 'flex';
+                 btnRow.style.justifyContent = 'center';
+                 btnRow.style.gap = '12px';
+                 
+                 var btnSair = document.createElement('button');
+                 btnSair.textContent = 'Sair';
+                 btnSair.className = 'btn btn-outline';
+                 btnSair.onclick = function() {
+                   document.body.removeChild(overlay);
+                 };
+                 
+                 var btnConfirmar = document.createElement('button');
+                 btnConfirmar.textContent = 'Confirmar';
+                 btnConfirmar.className = 'btn btn-primary';
+                 btnConfirmar.style.background = 'var(--bad)';
+                 btnConfirmar.onclick = function() {
+                   document.body.removeChild(overlay);
                    fetch(NAO_API + '/questionario/desistir', {
                      method: 'POST', headers: {'Content-Type': 'application/json'},
                      body: JSON.stringify({questionario_id: q.id})
                    }).then(function() { openQModal(); fetchQStats(); });
-                 }
+                 };
+                 
+                 btnRow.appendChild(btnSair);
+                 btnRow.appendChild(btnConfirmar);
+                 modal.appendChild(text);
+                 modal.appendChild(btnRow);
+                 overlay.appendChild(modal);
+                 document.body.appendChild(overlay);
                };
 
                wrapper.appendChild(btn);
