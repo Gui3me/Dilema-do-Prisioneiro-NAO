@@ -335,17 +335,49 @@ class Handler(BaseHTTPRequestHandler):
                 rows = c.fetchall()
                 conn.close()
 
+                # Labels Godspeed para Excel
+                gs_labels = [
+                    "Antropomorfismo > Falso / Natural",
+                    "Antropomorfismo > Aspecto mecânico / Aspecto humano",
+                    "Antropomorfismo > Inconsciente / Consciente",
+                    "Antropomorfismo > Artificial / Realista",
+                    "Antropomorfismo > Move-se com rigidez / Move-se com fluidez",
+                    "Animacidade > Morto / Com vida",
+                    "Animacidade > Parado / Energético",
+                    "Animacidade > Mecânico / Orgânico",
+                    "Animacidade > Artificial / Realista",
+                    "Animacidade > Estático / Interativo",
+                    "Animacidade > Apático / Participativo",
+                    "Simpatia > Não gosto / Gosto",
+                    "Simpatia > Hostil / Amigável",
+                    "Simpatia > Antipático / Gentil",
+                    "Simpatia > Desagradável / Agradável",
+                    "Simpatia > Horrível / Simpático",
+                    "Inteligência > Incompetente / Competente",
+                    "Inteligência > Ignorante / Sabedor",
+                    "Inteligência > Irresponsável / Responsável",
+                    "Inteligência > Pouco inteligente / Inteligente",
+                    "Inteligência > Insensato / Sensato",
+                    "Segurança > Ansioso / Descontraído",
+                    "Segurança > Agitado / Calmo",
+                    "Segurança > Sereno / Surpreendido"
+                ]
+
                 header = [
                     'questionario_id', 'session_id', 'timestamp_pre', 'status',
                     'genero', 'idade', 'escolaridade', 'freq_jogos', 'contato_robos', 'conhecimento_dilema'
                 ]
-                for i in range(1, 25):
-                    header.append('godspeed_%d' % i)
+                
+                pre_gs_cols = ['[Pré] %s (GS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
+                header.extend(pre_gs_cols)
+                
                 header.append('tempo_pre_segundos')
                 header += ['personalidade', 'winner', 'start_time', 'end_time']
                 header += ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3', 'C4', 'C5']
-                for i in range(1, 25):
-                    header.append('godspeed_pos_%d' % i)
+                
+                pos_gs_cols = ['[Pós] %s (GS_POS_%d)' % (gs_labels[i-1], i) for i in range(1, 25)]
+                header.extend(pos_gs_cols)
+                
                 header += ['tempo_jogo_segundos', 'tempo_pos_segundos', 'tempo_total_segundos']
 
                 buf = io.StringIO()
