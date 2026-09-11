@@ -237,13 +237,13 @@
             listContainer.innerHTML = '<div style="font-size:.85rem; color:var(--ink-faint); padding:12px; background:var(--surface-soft); border-radius:8px; text-align:center;">Nenhum question\u00e1rio em espera.<br>O participante j\u00e1 enviou?</div>';
          } else {
             aguardando.forEach(function(q){
-               var row = document.createElement('div');
-               row.style.display = 'flex';
-               row.style.gap = '8px';
+               var wrapper = document.createElement('div');
+               wrapper.style.position = 'relative';
+               wrapper.style.width = '100%';
 
                var btn = document.createElement('button');
                btn.className = 'btn btn-primary';
-               btn.style.flex = '1';
+               btn.style.width = '100%';
                btn.style.justifyContent = 'center';
                btn.style.fontSize = '0.9rem';
                btn.style.padding = '12px 18px';
@@ -253,11 +253,29 @@
                };
 
                var btnDesistir = document.createElement('button');
-               btnDesistir.className = 'btn btn-outline';
-               btnDesistir.innerHTML = '<strong style="color:var(--bad); font-size:1.1rem;">&times;</strong>';
-               btnDesistir.style.padding = '0 16px';
+               btnDesistir.innerHTML = '&times;';
                btnDesistir.title = 'Marcar como desistente';
-               btnDesistir.onclick = function() {
+               // Estilo de botão "fechar" no canto superior direito
+               btnDesistir.style.position = 'absolute';
+               btnDesistir.style.top = '-8px';
+               btnDesistir.style.right = '-8px';
+               btnDesistir.style.width = '24px';
+               btnDesistir.style.height = '24px';
+               btnDesistir.style.borderRadius = '50%';
+               btnDesistir.style.background = 'var(--bad)';
+               btnDesistir.style.color = '#fff';
+               btnDesistir.style.border = '2px solid var(--surface)';
+               btnDesistir.style.fontSize = '1.1rem';
+               btnDesistir.style.fontWeight = 'bold';
+               btnDesistir.style.lineHeight = '0';
+               btnDesistir.style.cursor = 'pointer';
+               btnDesistir.style.display = 'flex';
+               btnDesistir.style.alignItems = 'center';
+               btnDesistir.style.justifyContent = 'center';
+               btnDesistir.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+               
+               btnDesistir.onclick = function(e) {
+                 e.stopPropagation(); // Evita clicar no botão de trás
                  if(confirm('Você confirma que o participante não irá mais participar do estudo? Isso irá anular as respostas dele.')) {
                    fetch(NAO_API + '/questionario/desistir', {
                      method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -266,9 +284,9 @@
                  }
                };
 
-               row.appendChild(btn);
-               row.appendChild(btnDesistir);
-               listContainer.appendChild(row);
+               wrapper.appendChild(btn);
+               wrapper.appendChild(btnDesistir);
+               listContainer.appendChild(wrapper);
             });
          }
       })
