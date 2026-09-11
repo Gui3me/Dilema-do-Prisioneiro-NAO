@@ -385,9 +385,23 @@
         html += '<h3 style="font-size:.9rem;font-weight:700;color:var(--ink-soft);margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;">Tempos</h3>';
         html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">';
         html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Pré</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(pre.tempo_pre_segundos) + '</div></div>';
+        
         var tempoJogo  = pos ? pos.tempo_jogo_segundos  : null;
         var tempoPos   = pos ? pos.tempo_pos_segundos   : null;
-        var tempoTotal = pos ? pos.tempo_total_segundos  : null;
+        var tempoTotal = pos ? pos.tempo_total_segundos : null;
+
+        // Fallback: calcula tempo do jogo no frontend se estiver 0 e tivermos start/end time
+        if ((tempoJogo === 0 || tempoJogo === null) && sess && sess.start_time && sess.end_time) {
+          var t1 = new Date(sess.start_time.replace(' ', 'T') + 'Z').getTime();
+          var t2 = new Date(sess.end_time.replace(' ', 'T') + 'Z').getTime();
+          if (!isNaN(t1) && !isNaN(t2)) {
+            tempoJogo = Math.round((t2 - t1) / 1000);
+            if (tempoPos !== null && pre.tempo_pre_segundos !== null) {
+              tempoTotal = tempoPos + pre.tempo_pre_segundos + tempoJogo;
+            }
+          }
+        }
+
         html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Jogo</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoJogo) + '</div></div>';
         html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Pós</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoPos) + '</div></div>';
         html += '<div><div style="font-size:.7rem;color:var(--ink-faint);">Total</div><div style="font-weight:600;font-size:1.1rem;">' + secsToMMSS(tempoTotal) + '</div></div>';
