@@ -303,154 +303,154 @@ class Handler(BaseHTTPRequestHandler):
 
         # ── /exportar/csv ────────────────────────────────────
         elif path == '/exportar/csv':
-        try:
-            import xml.sax.saxutils as saxutils
-            conn = sqlite3.connect('dados_experimento_quest.db') if 'elif path == '/exportar/csv':'.startswith('elif self') else get_db()
-            c = conn.cursor()
-            c.execute('''
-                SELECT
-                    pq.id, pq.session_id, pq.timestamp, pq.status,
-                    pq.genero, pq.idade, pq.escolaridade,
-                    pq.freq_jogos, pq.contato_robos, pq.conhecimento_dilema,
-                    pq.godspeed_1, pq.godspeed_2, pq.godspeed_3, pq.godspeed_4, pq.godspeed_5,
-                    pq.godspeed_6, pq.godspeed_7, pq.godspeed_8, pq.godspeed_9, pq.godspeed_10,
-                    pq.godspeed_11, pq.godspeed_12, pq.godspeed_13, pq.godspeed_14, pq.godspeed_15,
-                    pq.godspeed_16, pq.godspeed_17, pq.godspeed_18, pq.godspeed_19, pq.godspeed_20,
-                    pq.godspeed_21, pq.godspeed_22, pq.godspeed_23, pq.godspeed_24,
-                    pq.tempo_pre_segundos,
-                    s.personalidade, s.winner, s.start_time, s.end_time,
-                    pos.A1, pos.A2, pos.A3, pos.A4, pos.A5,
-                    pos.B1, pos.B2, pos.B3,
-                    pos.C1, pos.C2, pos.C3, pos.C4, pos.C5,
-                    pos.godspeed_pos_1, pos.godspeed_pos_2, pos.godspeed_pos_3, pos.godspeed_pos_4, pos.godspeed_pos_5,
-                    pos.godspeed_pos_6, pos.godspeed_pos_7, pos.godspeed_pos_8, pos.godspeed_pos_9, pos.godspeed_pos_10,
-                    pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
-                    pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
-                    pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
-                    pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
-                FROM pre_questionarios pq
-                LEFT JOIN sessoes s ON s.id = pq.session_id
-                LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
-                ORDER BY pq.id
-            ''')
-            rows = c.fetchall()
-            conn.close()
+            try:
+                import xml.sax.saxutils as saxutils
+                conn = get_db()
+                c = conn.cursor()
+                c.execute('''
+                    SELECT
+                        pq.id, pq.session_id, pq.timestamp, pq.status,
+                        pq.genero, pq.idade, pq.escolaridade,
+                        pq.freq_jogos, pq.contato_robos, pq.conhecimento_dilema,
+                        pq.godspeed_1, pq.godspeed_2, pq.godspeed_3, pq.godspeed_4, pq.godspeed_5,
+                        pq.godspeed_6, pq.godspeed_7, pq.godspeed_8, pq.godspeed_9, pq.godspeed_10,
+                        pq.godspeed_11, pq.godspeed_12, pq.godspeed_13, pq.godspeed_14, pq.godspeed_15,
+                        pq.godspeed_16, pq.godspeed_17, pq.godspeed_18, pq.godspeed_19, pq.godspeed_20,
+                        pq.godspeed_21, pq.godspeed_22, pq.godspeed_23, pq.godspeed_24,
+                        pq.tempo_pre_segundos,
+                        s.personalidade, s.winner, s.start_time, s.end_time,
+                        pos.A1, pos.A2, pos.A3, pos.A4, pos.A5,
+                        pos.B1, pos.B2, pos.B3,
+                        pos.C1, pos.C2, pos.C3, pos.C4, pos.C5,
+                        pos.godspeed_pos_1, pos.godspeed_pos_2, pos.godspeed_pos_3, pos.godspeed_pos_4, pos.godspeed_pos_5,
+                        pos.godspeed_pos_6, pos.godspeed_pos_7, pos.godspeed_pos_8, pos.godspeed_pos_9, pos.godspeed_pos_10,
+                        pos.godspeed_pos_11, pos.godspeed_pos_12, pos.godspeed_pos_13, pos.godspeed_pos_14, pos.godspeed_pos_15,
+                        pos.godspeed_pos_16, pos.godspeed_pos_17, pos.godspeed_pos_18, pos.godspeed_pos_19, pos.godspeed_pos_20,
+                        pos.godspeed_pos_21, pos.godspeed_pos_22, pos.godspeed_pos_23, pos.godspeed_pos_24,
+                        pos.tempo_jogo_segundos, pos.tempo_pos_segundos, pos.tempo_total_segundos
+                    FROM pre_questionarios pq
+                    LEFT JOIN sessoes s ON s.id = pq.session_id
+                    LEFT JOIN pos_questionarios pos ON pos.questionario_id = pq.id
+                    ORDER BY pq.id
+                ''')
+                rows = c.fetchall()
+                conn.close()
 
-            gs_labels = [
-                "Antropomorfismo > Falso / Natural",
-                "Antropomorfismo > Aspecto mecanico / Aspecto humano",
-                "Antropomorfismo > Inconsciente / Consciente",
-                "Antropomorfismo > Artificial / Realista",
-                "Antropomorfismo > Rigidez / Fluidez",
-                "Animacidade > Morto / Com vida",
-                "Animacidade > Parado / Energetico",
-                "Animacidade > Mecanico / Organico",
-                "Animacidade > Artificial / Realista",
-                "Animacidade > Estatico / Interativo",
-                "Animacidade > Apatico / Participativo",
-                "Simpatia > Nao gosto / Gosto",
-                "Simpatia > Hostil / Amigavel",
-                "Simpatia > Antipatico / Gentil",
-                "Simpatia > Desagradavel / Agradavel",
-                "Simpatia > Horrivel / Simpatico",
-                "Inteligencia > Incompetente / Competente",
-                "Inteligencia > Ignorante / Sabedor",
-                "Inteligencia > Irresponsavel / Responsavel",
-                "Inteligencia > Pouco inteligente / Inteligente",
-                "Inteligencia > Insensato / Sensato",
-                "Seguranca > Ansioso / Descontraido",
-                "Seguranca > Agitado / Calmo",
-                "Seguranca > Sereno / Surpreendido"
-            ]
+                gs_labels = [
+                    "Antropomorfismo > Falso / Natural",
+                    "Antropomorfismo > Aspecto mecanico / Aspecto humano",
+                    "Antropomorfismo > Inconsciente / Consciente",
+                    "Antropomorfismo > Artificial / Realista",
+                    "Antropomorfismo > Rigidez / Fluidez",
+                    "Animacidade > Morto / Com vida",
+                    "Animacidade > Parado / Energetico",
+                    "Animacidade > Mecanico / Organico",
+                    "Animacidade > Artificial / Realista",
+                    "Animacidade > Estatico / Interativo",
+                    "Animacidade > Apatico / Participativo",
+                    "Simpatia > Nao gosto / Gosto",
+                    "Simpatia > Hostil / Amigavel",
+                    "Simpatia > Antipatico / Gentil",
+                    "Simpatia > Desagradavel / Agradavel",
+                    "Simpatia > Horrivel / Simpatico",
+                    "Inteligencia > Incompetente / Competente",
+                    "Inteligencia > Ignorante / Sabedor",
+                    "Inteligencia > Irresponsavel / Responsavel",
+                    "Inteligencia > Pouco inteligente / Inteligente",
+                    "Inteligencia > Insensato / Sensato",
+                    "Seguranca > Ansioso / Descontraido",
+                    "Seguranca > Agitado / Calmo",
+                    "Seguranca > Sereno / Surpreendido"
+                ]
 
-            xml = []
-            xml.append('<?xml version="1.0" encoding="utf-8"?>')
-            xml.append('<?mso-application progid="Excel.Sheet"?>')
-            xml.append('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">')
+                xml = []
+                xml.append('<?xml version="1.0" encoding="utf-8"?>')
+                xml.append('<?mso-application progid="Excel.Sheet"?>')
+                xml.append('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">')
             
-            xml.append('<Styles>')
-            xml.append(' <Style ss:ID="HeaderPre"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#D9EAD3" ss:Pattern="Solid"/></Style>')
-            xml.append(' <Style ss:ID="HeaderJogo"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style>')
-            xml.append(' <Style ss:ID="HeaderPos"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#F4CCCC" ss:Pattern="Solid"/></Style>')
-            xml.append('</Styles>')
+                xml.append('<Styles>')
+                xml.append(' <Style ss:ID="HeaderPre"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#D9EAD3" ss:Pattern="Solid"/></Style>')
+                xml.append(' <Style ss:ID="HeaderJogo"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style>')
+                xml.append(' <Style ss:ID="HeaderPos"><Font ss:Bold="1" ss:Color="#000000"/><Interior ss:Color="#F4CCCC" ss:Pattern="Solid"/></Style>')
+                xml.append('</Styles>')
 
-            def _s2(val):
-                if val is None: return u""
-                try:
-                    if isinstance(val, unicode): return val
-                except NameError: pass
-                try:
-                    if isinstance(val, bytes): return val.decode('utf-8')
-                except Exception: pass
-                return str(val)
+                def _s2(val):
+                    if val is None: return u""
+                    try:
+                        if isinstance(val, unicode): return val
+                    except NameError: pass
+                    try:
+                        if isinstance(val, bytes): return val.decode('utf-8')
+                    except Exception: pass
+                    return str(val)
 
-            def format_row(row_data):
-                r = ['   <Row>']
-                for val, style in row_data:
-                    s_val = _s2(val)
-                    t = "Number" if isinstance(val, (int, float)) else "String"
-                    cell = '    <Cell'
-                    if style: cell += ' ss:StyleID="{}"'.format(style)
-                    cell += '><Data ss:Type="{}">{}</Data></Cell>'.format(t, saxutils.escape(s_val).encode('utf-8').decode('utf-8'))
-                    r.append(cell)
-                r.append('   </Row>')
-                return "\n".join(r)
+                def format_row(row_data):
+                    r = ['   <Row>']
+                    for val, style in row_data:
+                        s_val = _s2(val)
+                        t = "Number" if isinstance(val, (int, float)) else "String"
+                        cell = '    <Cell'
+                        if style: cell += ' ss:StyleID="{}"'.format(style)
+                        cell += '><Data ss:Type="{}">{}</Data></Cell>'.format(t, saxutils.escape(s_val).encode('utf-8').decode('utf-8'))
+                        r.append(cell)
+                    r.append('   </Row>')
+                    return "\n".join(r)
 
-            # 1. PLANILHA PRÉ
-            xml.append(' <Worksheet ss:Name="Pre-Questionario">')
-            xml.append('  <Table>')
-            header_pre = ['ID Questionario', 'ID Sessao', 'Data/Hora (Pre)', 'Status', 'Genero', 'Idade', 'Escolaridade', 'Freq Jogos', 'Contato Robos', 'Conhec Dilema']
-            header_pre.extend(['{} (GS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
-            header_pre.append('Tempo Resposta (seg)')
-            xml.append(format_row([(h, "HeaderPre") for h in header_pre]))
-            for row in rows:
-                row_pre = list(row[0:35])
-                xml.append(format_row([(v, None) for v in row_pre]))
-            xml.append('  </Table>')
-            xml.append(' </Worksheet>')
+                # 1. PLANILHA PRÉ
+                xml.append(' <Worksheet ss:Name="Pre-Questionario">')
+                xml.append('  <Table>')
+                header_pre = ['ID Questionario', 'ID Sessao', 'Data/Hora (Pre)', 'Status', 'Genero', 'Idade', 'Escolaridade', 'Freq Jogos', 'Contato Robos', 'Conhec Dilema']
+                header_pre.extend(['{} (GS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
+                header_pre.append('Tempo Resposta (seg)')
+                xml.append(format_row([(h, "HeaderPre") for h in header_pre]))
+                for row in rows:
+                    row_pre = list(row[0:35])
+                    xml.append(format_row([(v, None) for v in row_pre]))
+                xml.append('  </Table>')
+                xml.append(' </Worksheet>')
 
-            # 2. PLANILHA JOGO
-            xml.append(' <Worksheet ss:Name="Sessao de Jogo">')
-            xml.append('  <Table>')
-            header_jogo = ['ID Sessao', 'ID Questionario', 'Personalidade', 'Vencedor', 'Inicio', 'Fim']
-            xml.append(format_row([(h, "HeaderJogo") for h in header_jogo]))
-            for row in rows:
-                if row[1] is not None:
-                    row_jogo = [row[1], row[0], row[35], row[36], row[37], row[38]]
-                    xml.append(format_row([(v, None) for v in row_jogo]))
-            xml.append('  </Table>')
-            xml.append(' </Worksheet>')
+                # 2. PLANILHA JOGO
+                xml.append(' <Worksheet ss:Name="Sessao de Jogo">')
+                xml.append('  <Table>')
+                header_jogo = ['ID Sessao', 'ID Questionario', 'Personalidade', 'Vencedor', 'Inicio', 'Fim']
+                xml.append(format_row([(h, "HeaderJogo") for h in header_jogo]))
+                for row in rows:
+                    if row[1] is not None:
+                        row_jogo = [row[1], row[0], row[35], row[36], row[37], row[38]]
+                        xml.append(format_row([(v, None) for v in row_jogo]))
+                xml.append('  </Table>')
+                xml.append(' </Worksheet>')
 
-            # 3. PLANILHA PÓS
-            xml.append(' <Worksheet ss:Name="Pos-Questionario">')
-            xml.append('  <Table>')
-            header_pos = ['ID Questionario', 'ID Sessao']
-            header_pos += ['A1 (Muitos/Poucos motivos)', 'A2 (Dificil/Facil entender)', 'A3 (Nao sei/Sei o que esperava)', 'A4 (Surpreso/Nada surpreso)', 'A5 (Dificil/Facil prever)', 
-                           'B1 (Robo quis me prejudicar)', 'B2 (Robo quis me ajudar)', 'B3 (Robo foi neutro)', 
-                           'C1 (Robo cooperou/Enganou)', 'C2 (Robo foi justo/Injusto)', 'C3 (Robo previsivel/Imprevisivel)', 'C4 (Robo confiavel/Nao confiavel)', 'C5 (Robo amigavel/Hostil)']
-            header_pos.extend(['{} (GS_POS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
-            header_pos += ['Tempo Jogo (s)', 'Tempo Resposta (s)', 'Tempo Total Experimento (s)']
-            xml.append(format_row([(h, "HeaderPos") for h in header_pos]))
-            for row in rows:
-                if row[39] is not None:
-                    row_pos = [row[0], row[1]] + list(row[39:79])
-                    xml.append(format_row([(v, None) for v in row_pos]))
-            xml.append('  </Table>')
-            xml.append(' </Worksheet>')
+                # 3. PLANILHA PÓS
+                xml.append(' <Worksheet ss:Name="Pos-Questionario">')
+                xml.append('  <Table>')
+                header_pos = ['ID Questionario', 'ID Sessao']
+                header_pos += ['A1 (Muitos/Poucos motivos)', 'A2 (Dificil/Facil entender)', 'A3 (Nao sei/Sei o que esperava)', 'A4 (Surpreso/Nada surpreso)', 'A5 (Dificil/Facil prever)', 
+                               'B1 (Robo quis me prejudicar)', 'B2 (Robo quis me ajudar)', 'B3 (Robo foi neutro)', 
+                               'C1 (Robo cooperou/Enganou)', 'C2 (Robo foi justo/Injusto)', 'C3 (Robo previsivel/Imprevisivel)', 'C4 (Robo confiavel/Nao confiavel)', 'C5 (Robo amigavel/Hostil)']
+                header_pos.extend(['{} (GS_POS_{})'.format(gs_labels[i-1], i) for i in range(1, 25)])
+                header_pos += ['Tempo Jogo (s)', 'Tempo Resposta (s)', 'Tempo Total Experimento (s)']
+                xml.append(format_row([(h, "HeaderPos") for h in header_pos]))
+                for row in rows:
+                    if row[39] is not None:
+                        row_pos = [row[0], row[1]] + list(row[39:79])
+                        xml.append(format_row([(v, None) for v in row_pos]))
+                xml.append('  </Table>')
+                xml.append(' </Worksheet>')
 
-            xml.append('</Workbook>')
+                xml.append('</Workbook>')
             
-            xls_bytes = ("\n".join(xml)).encode('utf-8')
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
-            self.send_header('Content-Disposition', 'attachment; filename="dados_experimento.xls"')
-            self.send_header('Content-Length', str(len(xls_bytes)))
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(xls_bytes)
-        except Exception as e:
-            _send_json(self, {"erro": str(e)}, 500)
-elif path == '/questionario/aguardando':
+                xls_bytes = ("\n".join(xml)).encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
+                self.send_header('Content-Disposition', 'attachment; filename="dados_experimento.xls"')
+                self.send_header('Content-Length', str(len(xls_bytes)))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(xls_bytes)
+            except Exception as e:
+                _send_json(self, {"erro": str(e)}, 500)
+        elif path == '/questionario/aguardando':
             _send_json(self, {"questionario_id": None, "liberado": False})
 
         else:
