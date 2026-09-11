@@ -459,6 +459,13 @@
   });
 
   /* ---------- Questionnaire Stats Tab ---------- */
+  function secsToMMSS(s) {
+    if (s === null || s === undefined || isNaN(s)) return '—';
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
+    return m + "m " + (sec < 10 ? "0" : "") + sec + "s";
+  }
+
   function fetchQStats(){
     fetch(NAO_API + '/questionario/stats')
       .then(function(r){ return r.json(); })
