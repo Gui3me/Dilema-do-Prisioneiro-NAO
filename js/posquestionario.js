@@ -72,11 +72,58 @@
                btn.style.padding = '12px 18px';
                btn.innerHTML = 'Selecionar participante Q' + q.id;
                btn.onclick = function() {
-                  if (confirm('Liberar o tablet para o participante Q' + q.id + '?')) {
-                     questionarioId = q.id;
-                     sessionStorage.setItem('pos_active_questionario_id', q.id);
-                     loadParticipant();
-                  }
+                 var overlay = document.createElement('div');
+                 overlay.style.position = 'fixed';
+                 overlay.style.inset = '0';
+                 overlay.style.background = 'rgba(0,0,0,0.5)';
+                 overlay.style.backdropFilter = 'blur(4px)';
+                 overlay.style.zIndex = '3000';
+                 overlay.style.display = 'flex';
+                 overlay.style.alignItems = 'center';
+                 overlay.style.justifyContent = 'center';
+                 
+                 var modal = document.createElement('div');
+                 modal.style.background = 'var(--surface)';
+                 modal.style.padding = '24px';
+                 modal.style.borderRadius = '12px';
+                 modal.style.maxWidth = '400px';
+                 modal.style.textAlign = 'center';
+                 modal.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                 
+                 var text = document.createElement('p');
+                 text.innerHTML = 'Você confirma que deseja liberar este tablet para o participante <strong>Q' + q.id + '</strong> responder o pós-questionário?';
+                 text.style.marginBottom = '20px';
+                 text.style.color = 'var(--ink)';
+                 text.style.fontSize = '1.05rem';
+                 
+                 var btnRow = document.createElement('div');
+                 btnRow.style.display = 'flex';
+                 btnRow.style.justifyContent = 'center';
+                 btnRow.style.gap = '12px';
+                 
+                 var btnCancelar = document.createElement('button');
+                 btnCancelar.textContent = 'Cancelar';
+                 btnCancelar.className = 'btn btn-outline';
+                 btnCancelar.onclick = function() {
+                   document.body.removeChild(overlay);
+                 };
+                 
+                 var btnConfirmar = document.createElement('button');
+                 btnConfirmar.textContent = 'Liberar Tablet';
+                 btnConfirmar.className = 'btn btn-primary';
+                 btnConfirmar.onclick = function() {
+                   document.body.removeChild(overlay);
+                   questionarioId = q.id;
+                   sessionStorage.setItem('pos_active_questionario_id', q.id);
+                   loadParticipant();
+                 };
+                 
+                 btnRow.appendChild(btnCancelar);
+                 btnRow.appendChild(btnConfirmar);
+                 modal.appendChild(text);
+                 modal.appendChild(btnRow);
+                 overlay.appendChild(modal);
+                 document.body.appendChild(overlay);
                };
                listContainer.appendChild(btn);
             });

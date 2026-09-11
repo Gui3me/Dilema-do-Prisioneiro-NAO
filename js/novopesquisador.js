@@ -654,66 +654,12 @@
       .catch(function(){});
   }
 
-  /* ---------- Post-game questionnaire prompt ---------- */
-  var lastGameFase = null;
-  var posPromptShown = false;
-
-  function checkPostQ(data){
-    if(data.fase === 'fim' && lastGameFase !== 'fim'){
-      var qid = localStorage.getItem('last_questionario_id');
-      if(qid){
-        var panel = document.getElementById('pos-prompt-panel');
-        var label = document.getElementById('pos-prompt-id');
-        if(panel && !posPromptShown){
-          posPromptShown = true;
-          if(label) label.textContent = 'Q' + qid;
-          panel.style.display = 'block';
-          var qTab = document.querySelector('.dash-nav-item[data-tab="tab-questionarios"]');
-          if(qTab) activateTab(qTab);
-        }
-      }
-    }
-    if(data.fase === 'aguardando_personalidade'){
-      posPromptShown = false;
-    }
-    lastGameFase = data.fase;
-  }
-
-  var btnAbrirPos = document.getElementById('btn-abrir-pos');
-  if(btnAbrirPos) {
-    btnAbrirPos.addEventListener('click', function(){
-      var qid = localStorage.getItem('last_questionario_id');
-      document.getElementById('pos-prompt-panel').style.display = 'none';
-      // Abre o pos-questionario com QID pre-preenchido em nova aba para o participante
-      var url = 'posquestionario.html' + (qid ? '?questionario_id=' + qid : '');
-      window.open(url, '_blank');
-      localStorage.removeItem('last_questionario_id');
-      localStorage.removeItem('last_session_id');
-    });
-  }
-
-  var btnPularPos = document.getElementById('btn-pular-pos');
-  if(btnPularPos) btnPularPos.addEventListener('click', function(){
-    var qid = localStorage.getItem('last_questionario_id');
-    document.getElementById('pos-prompt-panel').style.display = 'none';
-    // Marca como desistente no backend (invalida o pre e incrementa desistencias)
-    if(qid) {
-      fetch(NAO_API + '/questionario/desistir', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({questionario_id: parseInt(qid, 10)})
-      }).catch(function(){});
-    }
-    localStorage.removeItem('last_questionario_id');
-    localStorage.removeItem('last_session_id');
-  });
-
   /* ---------- checkGameState ---------- */
   function checkGameState() {
     fetch(NAO_API + '/estado')
       .then(function(r){ return r.json(); })
       .then(function(data){
         setConnState('ok');
-        checkPostQ(data);
         var isPlaying = (data.fase === 'aguardando_jogada' || data.fase === 'processando') && data.rodada > 0;
         if(isPlaying){
           apiWarn.style.display = 'flex';
