@@ -416,13 +416,26 @@ def executar_gesto(p, s):
 # ─── HTTP Handler ─────────────────────────────────────────
 
 def _send_json(handler, data, status=200):
-    body = json.dumps(data).encode('utf-8')
+    # ensure_ascii=True e seguro no Python 2.7: escapa unicode como \uXXXX
+    # evita UnicodeDecodeError com strings UTF-8 vindas do SQLite
+    body = json.dumps(data, ensure_ascii=True).encode('utf-8')
     handler.send_response(status)
     handler.send_header('Content-Type', 'application/json; charset=utf-8')
     handler.send_header('Content-Length', str(len(body)))
     handler.send_header('Access-Control-Allow-Origin', '*')
     handler.end_headers()
     handler.wfile.write(body)
+
+def _s(v):
+    """Converte str UTF-8 do SQLite para unicode (Python 2.7) ou retorna o valor original."""
+    if isinstance(v, str):
+        try:
+            return v.decode('utf-8')
+        except Exception:
+            return v
+    return v
+
+
 
 class GameHandler(BaseHTTPRequestHandler):
 
@@ -472,8 +485,8 @@ class GameHandler(BaseHTTPRequestHandler):
                 todas_sessoes = []
                 for s in c.fetchall():
                     todas_sessoes.append({
-                        "id": s[0], "start_time": s[1], "personalidade": s[2],
-                        "winner": s[3], "hash_participante": s[4] if s[4] else "Anonimo",
+                        "id": s[0], "start_time": _s(s[1]), "personalidade": s[2],
+                        "winner": _s(s[3]), "hash_participante": _s(s[4]) if s[4] else "Anonimo",
                         "questionario_id": s[5]
                     })
                 c.execute('SELECT COUNT(*) FROM sessoes')
@@ -567,7 +580,7 @@ class GameHandler(BaseHTTPRequestHandler):
                 c.execute('SELECT id, timestamp, status, session_id FROM pre_questionarios ORDER BY id DESC')
                 lista = []
                 for r in c.fetchall():
-                    lista.append({"id": r[0], "timestamp": r[1], "status": r[2], "session_id": r[3]})
+                    lista.append({"id": r[0], "timestamp": _s(r[1]), "status": _s(r[2]), "session_id": r[3]})
                 conn.close()
                 _send_json(self, {"questionarios": lista})
             except Exception as e:
@@ -608,6 +621,10 @@ class GameHandler(BaseHTTPRequestHandler):
                             'godspeed_21','godspeed_22','godspeed_23','godspeed_24',
                             'tempo_pre_segundos']
                 pre_data = dict(zip(pre_keys, row_pre))
+                # Decodifica campos de texto para unicode (Python 2.7 SQLite retorna str UTF-8)
+                for k in ('timestamp', 'status', 'genero', 'idade', 'escolaridade'):
+                    if k in pre_data:
+                        pre_data[k] = _s(pre_data[k])
                 # Pos-questionario
                 c.execute('''
                     SELECT A1,A2,A3,A4,A5, B1,B2,B3, C1,C2,C3,C4,C5,
@@ -638,9 +655,9 @@ class GameHandler(BaseHTTPRequestHandler):
                     row_sess = c.fetchone()
                     if row_sess:
                         sessao_data = {
-                            'id': row_sess[0], 'start_time': row_sess[1],
-                            'personalidade': row_sess[2], 'winner': row_sess[3],
-                            'end_time': row_sess[4]
+                            'id': row_sess[0], 'start_time': _s(row_sess[1]),
+                            'personalidade': row_sess[2], 'winner': _s(row_sess[3]),
+                            'end_time': _s(row_sess[4])
                         }
                 conn.close()
                 _send_json(self, {
@@ -722,19 +739,22 @@ class GameHandler(BaseHTTPRequestHandler):
 
                 for row in rows:
                     row_list = list(row)
-                    # Encode strings para UTF-8
+                    # Normaliza para UTF-8 bytes (Python 2.7 csv.writer espera str/bytes)
                     encoded = []
                     for val in row_list:
-                        if isinstance(val, unicode):
-                            encoded.append(val.encode('utf-8'))
-                        elif val is None:
+                        if val is None:
                             encoded.append('')
+                        elif isinstance(val, unicode):
+                            encoded.append(val.encode('utf-8'))
+                        elif isinstance(val, str):
+                            # Ja sao bytes UTF-8 do SQLite, passa direto
+                            encoded.append(val)
                         else:
                             encoded.append(val)
                     writer.writerow(encoded)
                     # Acumular para medias se status == 'completo'
                     status_val = row_list[3]
-                    if status_val == 'completo':
+                    if status_val in ('completo', u'completo'):
                         for k, idx in enumerate(numeric_indices):
                             v = row_list[idx]
                             if v is not None:
