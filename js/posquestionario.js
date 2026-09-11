@@ -255,6 +255,86 @@
   var btnGsPosBack = document.getElementById('btn-gs-pos-back');
   if(btnGsPosBack) { btnGsPosBack.addEventListener('click', function(){ showSection('sec-C'); }); }
 
+  var _isSubmitting = false;
+
+  // Interceptar recarregar página (F5, fechar aba)
+  window.addEventListener('beforeunload', function(e) {
+    if (currentSection > 0 && currentSection <= TOTAL_SECTIONS && !_isSubmitting) {
+      e.preventDefault();
+      e.returnValue = 'Se você sair agora, sua participação será invalidada. Tem certeza?';
+      return e.returnValue;
+    }
+  });
+
+  // Interceptar botão voltar do navegador
+  history.pushState(null, null, location.href);
+  window.addEventListener('popstate', function() {
+    if (currentSection > 0 && currentSection <= TOTAL_SECTIONS && !_isSubmitting) {
+      history.pushState(null, null, location.href); // Trava o voltar novamente
+      
+      var overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.background = 'rgba(0,0,0,0.5)';
+      overlay.style.backdropFilter = 'blur(4px)';
+      overlay.style.zIndex = '3000';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      
+      var modal = document.createElement('div');
+      modal.style.background = 'var(--surface)';
+      modal.style.padding = '24px';
+      modal.style.borderRadius = '12px';
+      modal.style.maxWidth = '400px';
+      modal.style.textAlign = 'center';
+      modal.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      
+      var text = document.createElement('p');
+      text.textContent = 'Você tentou voltar a página. Se sair agora, sua participação no estudo será completamente invalidada e seus dados perdidos. Deseja mesmo sair?';
+      text.style.marginBottom = '20px';
+      text.style.color = 'var(--ink)';
+      text.style.fontSize = '1rem';
+      
+      var btnRow = document.createElement('div');
+      btnRow.style.display = 'flex';
+      btnRow.style.justifyContent = 'center';
+      btnRow.style.gap = '12px';
+      
+      var btnFicar = document.createElement('button');
+      btnFicar.textContent = 'Continuar respondendo';
+      btnFicar.className = 'btn btn-primary';
+      btnFicar.onclick = function() {
+        document.body.removeChild(overlay);
+      };
+      
+      var btnSair = document.createElement('button');
+      btnSair.textContent = 'Sair e invalidar';
+      btnSair.className = 'btn btn-outline';
+      btnSair.style.color = 'var(--bad)';
+      btnSair.style.borderColor = 'var(--bad)';
+      btnSair.onclick = function() {
+        document.body.removeChild(overlay);
+        _isSubmitting = true;
+        
+        // Marca como desistente no backend
+        fetch(NAO_API + '/questionario/desistir', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({questionario_id: questionarioId})
+        }).catch(function(){});
+        
+        history.back(); // Volta de verdade
+      };
+      
+      btnRow.appendChild(btnFicar);
+      btnRow.appendChild(btnSair);
+      modal.appendChild(text);
+      modal.appendChild(btnRow);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+  });
+
   var btnGsPosSubmit = document.getElementById('btn-gs-pos-submit');
   if(btnGsPosSubmit) {
     btnGsPosSubmit.addEventListener('click', function(){
@@ -269,6 +349,7 @@
       document.getElementById('val-gs-pos').style.display = 'none';
       btnGsPosSubmit.disabled = true;
       btnGsPosSubmit.textContent = 'Enviando...';
+      _isSubmitting = true;
 
       var tempoPosSegundos = _posStartTime ? Math.round((Date.now() - _posStartTime) / 1000) : null;
       var tempoJogoSegundos = localStorage.getItem('tempo_jogo_segundos');
