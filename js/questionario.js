@@ -1,6 +1,6 @@
 (function(){
   var urlParams = new URLSearchParams(window.location.search);
-  var storedIp = urlParams.get('ip') || localStorage.getItem('nao_ip') || '10.43.151.105';
+  var storedIp = urlParams.get('ip') || localStorage.getItem('nao_ip') || '172.16.60.137';
   localStorage.setItem('nao_ip', storedIp);
   var NAO_API = 'http://' + storedIp + ':5050';
 
