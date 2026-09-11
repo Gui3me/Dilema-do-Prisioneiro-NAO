@@ -153,7 +153,7 @@
   }
 
   /* ---------- NAO API ---------- */
-  var storedIp = localStorage.getItem('nao_ip') || '10.43.151.105';
+  var storedIp = localStorage.getItem('nao_ip') || '172.16.60.137';
   var NAO_API  = 'http://' + storedIp + ':5050';
 
   /* ---------- Screen navigation ---------- */
