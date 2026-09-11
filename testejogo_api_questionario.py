@@ -192,7 +192,7 @@ _jogo_liberado = {
 _lock_lib = threading.Lock()
 
 # ─── Conexao NAOqi ────────────────────────────────────────
-ROBOT_IP   = "172.16.60.137"
+ROBOT_IP   = "10.43.151.105"
 NAOQI_PORT = 9561
 HTTP_PORT  = 5050
 

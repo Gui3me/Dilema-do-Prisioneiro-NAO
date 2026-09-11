@@ -28,7 +28,7 @@
   applyFontScale();
 
   /* ---------- NAO API Config ---------- */
-  var storedIp = localStorage.getItem('nao_ip') || '172.16.60.137';
+  var storedIp = localStorage.getItem('nao_ip') || '10.43.151.105';
   var NAO_API = 'http://' + storedIp + ':5050';
 
   var connDot = document.getElementById('conn-status-dot');
@@ -340,7 +340,7 @@
   var btnExportCsv = document.getElementById('btn-export-csv');
   if (btnExportCsv) {
     btnExportCsv.addEventListener('click', function () {
-      var storedIp = localStorage.getItem('nao_ip') || '172.16.60.137';
+      var storedIp = localStorage.getItem('nao_ip') || '10.43.151.105';
       window.open('http://' + storedIp + ':5050/exportar/csv', '_blank');
     });
   }
